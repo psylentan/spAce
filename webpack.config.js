@@ -51,21 +51,14 @@ module.exports = {
         new CopyWebpackPlugin({
             patterns: [
                 { from: 'src/assets', to: 'assets' },
-                { from: 'WIP-media/Sound', to: 'sounds' },
-                { from: 'WIP-media/s1-bg.jpg', to: 's1-bg.jpg' }
+                { from: 'WIP-media/Sound', to: 'sounds' }
             ]
         })
     ],
     devServer: {
-        static: [
-            {
-                directory: path.join(__dirname, 'dist'),
-            },
-            {
-                directory: path.join(__dirname, 'WIP-media'),
-                publicPath: '/'
-            }
-        ],
+        static: {
+            directory: path.join(__dirname, 'dist'),
+        },
         compress: true,
         port: 3000
     },

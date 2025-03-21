@@ -1,34 +1,53 @@
-import 'phaser';
+import Phaser from 'phaser';
 
 export class MainMenuScene extends Phaser.Scene {
     constructor() {
-        super({ key: 'MainMenuScene' });
+        super('MainMenuScene');
     }
 
-    create() {
-        const { width, height } = this.cameras.main;
-
-        // Title
-        this.add.text(width / 2, height / 4, 'Space Explorer', {
-            fontSize: '64px',
-            color: '#ffffff'
-        }).setOrigin(0.5);
-
-        // Menu options
-        const startButton = this.add.text(width / 2, height / 2, 'Start Game', {
-            fontSize: '32px',
-            color: '#ffffff'
-        })
-            .setOrigin(0.5)
-            .setInteractive({ useHandCursor: true })
-            .on('pointerover', () => startButton.setColor('#ff0'))
-            .on('pointerout', () => startButton.setColor('#ffffff'))
-            .on('pointerdown', () => this.scene.start('GameScene'));
-
-        // Version info
-        this.add.text(width / 2, height - 50, 'Alpha Version 0.1', {
-            fontSize: '16px',
-            color: '#666666'
-        }).setOrigin(0.5);
+    create(): void {
+        // Add background
+        this.add.tileSprite(0, 0, this.cameras.main.width, this.cameras.main.height, 'background')
+            .setOrigin(0, 0)
+            .setScrollFactor(0);
+            
+        // Add title
+        this.add.image(this.cameras.main.width / 2, 100, 'title')
+            .setOrigin(0.5);
+        
+        // Add start button
+        const startButton = this.add.image(
+            this.cameras.main.width / 2,
+            this.cameras.main.height / 2,
+            'button'
+        ).setOrigin(0.5);
+        
+        // Add text to the button
+        this.add.text(
+            startButton.x,
+            startButton.y,
+            'START GAME',
+            {
+                fontSize: '24px',
+                color: '#ffffff'
+            }
+        ).setOrigin(0.5);
+        
+        // Make the button interactive
+        startButton.setInteractive();
+        
+        // Add hover effect
+        startButton.on('pointerover', () => {
+            startButton.setTint(0xcccccc);
+        });
+        
+        startButton.on('pointerout', () => {
+            startButton.clearTint();
+        });
+        
+        // Start the game when clicked
+        startButton.on('pointerdown', () => {
+            this.scene.start('SpaceFlightScene');
+        });
     }
 } 

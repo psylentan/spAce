@@ -1,0 +1,9 @@
+This is a placeholder file for environment assets.
+In a real implementation, this directory would contain:
+- background.png
+- stars.png
+- asteroid.png
+- loot-crate.png
+- mining-station.png
+- encounter-trigger.png
+- etc. 
