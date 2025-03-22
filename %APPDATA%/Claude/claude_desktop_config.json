@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "stability-ai": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-server-stability-ai"
+      ],
+      "env": {
+        "STABILITY_AI_API_KEY": "sk-PBm1Vn2suVZ9BEli5favpu9oXSlgSKw9Wp6aoaPuaXo4NJe1"
+      }
+    }
+  }
+} 

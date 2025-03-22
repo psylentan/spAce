@@ -1,0 +1,100 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# **Phaser-Based Space Exploration & Deck-Building Game**
+
+## **📌 Project Overview**
+We are developing a **space exploration and combat-focused deck-building game** using **Phaser 3**. This project is highly **experimental**, where we explore different "blocks" of mechanics, systems, and integrations to determine the best approach. The goal is to create a **modular**, **scalable**, and **AI-assisted** game development pipeline while keeping everything centralized within **Cursor.ai** and GitHub.
+
+---
+
+## **🔧 Tech Stack & Integration Blocks**
+
+| **Category** | **Technology / Library** | **Purpose** |
+|-------------|-------------------------|-------------|
+| **Game Engine** | [Phaser 3](mdc:https:/phaser.io) | Core game engine for 2D space exploration, combat, and card interactions |
+| **Code & Version Control** | [Cursor.ai](mdc:https:/cursor.sh), [GitHub](mdc:https:/github.com) | AI-assisted coding, version control, and centralized project management |
+| **UI & UX** | [KAPLAY.js](mdc:https:/kaplayjs.com), [ROT.js](mdc:https:/ondras.github.io/rot.js/manual) | UI frameworks for game menus, HUDs, and modular UI elements |
+| **Deck & Card System** | Custom MCP Deck Module | AI-assisted deck-building and procedural card generation |
+| **Game Mechanics** | [Matter.js](mdc:https:/brm.io/matter-js), [Cannon.js](mdc:https:/schteppe.github.io/cannon.js) | Pre-built physics and movement for space combat and interactions |
+| **Procedural Content** | Custom MCP Procedural Generation | AI-assisted planetary and event generation system |
+| **Asset Generation** | Custom AI MCP Server (Stable Diffusion API) | Auto-generating space-themed sprites, UI elements, and textures |
+| **Audio & Sound** | [Howler.js](mdc:https:/howlerjs.com), [Web Speech API](mdc:https:/developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API) | Music, sound effects, and AI-powered voice narration |
+| **MCP Integration** | Custom MCP Servers (Node.js & Flask) | Connecting AI-powered asset generation, debugging, and automation |
+| **Deployment** | GitHub Actions, Node.js Express Server | Auto-deploying and hosting the game |
+
+---
+
+## **🔬 Experimental Blocks**
+Since this project is exploratory, we are testing different approaches to various game systems. Each "block" represents a modular system that we can iterate upon, refine, or swap out if needed.
+
+### **🃏 Deck-Building & Card Mechanics (Core Block)**
+- **AI-generated cards** with dynamic abilities and modifiers
+- **Turn-based combat system** using procedural encounters
+- **Multiple deck strategies** (aggressive, defensive, resource-focused)
+- **AI-assisted card balancing** via MCP-based game testing
+
+### **🚀 Space Exploration (Core Block)**
+- **Grid-based movement vs. free-space navigation (testing both approaches)**
+- **Procedural planet and station generation**
+- **Random events, enemy encounters, and resource gathering**
+- **Large space map with multiple objects**:
+  - **Planet**
+  - **Asteroid**
+  - **Space Station**
+  - **Mining Station**
+  - **Abandoned Battleship**
+  - **Alien Debris**
+
+### **🛰 Space Combat System (Experimental Block)**
+- **Card-based attack and defense mechanics**
+- **Physics-driven projectile and shield systems**
+- **Testing different AI-generated combat encounters**
+
+### **🌌 Procedural Generation (Experimental Block)**
+- **AI-driven map generation** for planets, space stations, and anomalies
+- **Dynamic mission and event creation** based on player choices
+- **Adapting difficulty scaling based on game progression**
+
+### **🎵 Sound & Narration (Experimental Block)**
+- **TTS-generated space dialogues and AI interactions**
+- **Adaptive background music for different space environments**
+- **Procedural sound effects for combat and exploration**
+
+---
+
+## **⚡ Development & AI Integration Workflow**
+1. **Game Logic Development in Cursor.ai**
+   - AI-assisted coding for Phaser scenes, game state management, and mechanics
+   - MCP-driven automation for repetitive tasks
+
+2. **GitHub for Code Management**
+   - Every block of development is pushed to GitHub for version tracking
+   - Automated testing and deployment workflows with GitHub Actions
+
+3. **MCP Servers for AI Automation**
+   - **Deck & Card Generator MCP** → AI-assisted procedural deck creation
+   - **Asset Generator MCP** → Auto-generates missing assets (ships, cards, UI, etc.)
+   - **Procedural Generator MCP** → Creates space maps, missions, and encounters
+   - **AI Debugging MCP** → Runs automated tests and balance adjustments
+
+4. **Deployment & Playtesting**
+   - Hosted via Node.js Express Server (local testing)
+   - Cloud-based deployment via GitHub Actions
+   - Web-based playtesting with real-time AI insights
+
+---
+
+## **🚀 Conclusion & Next Steps**
+This **Phaser-based space exploration deck-building game** is structured around **modular, replaceable blocks**, allowing us to experiment with **different mechanics and integrations**. By leveraging **AI automation**, **procedural generation**, and **MCP-driven development**, we aim to create a **scalable, engaging experience** while refining the best development approach for the game.
+
+**🎯 Next Steps:**
+- **Phase 1:** Set up the core Phaser environment, GitHub integration, and basic deck mechanics.
+- **Phase 2:** Implement procedural space exploration mechanics with large space map elements.
+- **Phase 3:** Expand combat and AI-driven encounters.
+- **Phase 4:** Optimize UI/UX, sound, and deployment.
+
+This document will evolve as we continue to test and iterate on different approaches. 🚀
+

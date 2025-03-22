@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="32" height="32" version="1.1" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+    <!-- Random debris pieces -->
+    <path d="M8 8L16 12L12 20L4 16Z" fill="#4a4a4a" stroke="#ffffff" stroke-width="1"/>
+    <path d="M20 4L24 12L16 16L18 8Z" fill="#6b6b6b" stroke="#ffffff" stroke-width="1"/>
+    <path d="M16 20L24 24L20 28L12 24Z" fill="#8b8b8b" stroke="#ffffff" stroke-width="1"/>
+</svg> 

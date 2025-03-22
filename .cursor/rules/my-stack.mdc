@@ -1,0 +1,36 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Technical Stack 
+
+Game Engine:
+Phaser 3 (v3.70.0) - A powerful 2D game framework
+
+Programming Language:
+TypeScript - For type-safe JavaScript development
+
+Build & Development Tools:
+Webpack (v5.89.0) - Module bundler
+Webpack Dev Server (v4.15.1) - Development server with hot reload
+TypeScript Loader (ts-loader v9.5.1) - For webpack TypeScript compilation
+HTML Webpack Plugin (v5.6.3) - For HTML file generation
+Copy Webpack Plugin (v13.0.0) - For asset management
+
+Server:
+Express.js (v4.18.2) - Node.js web framework
+
+Development Environment:
+Node.js with npm for package management
+Development server running on http://localhost:3000
+
+Project Structure:
+/src - Source code directory
+/scenes - Phaser game scenes
+/systems - Game systems (including sound management)
+/components - Game components
+/utils - Utility functions
+/assets - Game assets (sprites, sounds)
+/WIP-media - Work in progress media files
+/Sound - Audio files (engine sounds, background music)

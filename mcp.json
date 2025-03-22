@@ -1,9 +1,0 @@
-{
-    "clickup": {
-        "command": "npx",
-        "args": ["-y", "clickup-mcp-server"],
-        "env": {
-            "CLICKUP_API_TOKEN": "pk_25501907_JHMAU9AIULN3AWTSX0I268WLHLRQZJ6G"
-        }
-    }
-} 

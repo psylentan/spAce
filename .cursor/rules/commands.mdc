@@ -1,0 +1,6 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+Always prefer using using Windows commands instead of Unix-style commands.

@@ -1,0 +1,5 @@
+This is a placeholder file for card assets.
+In a real implementation, this directory would contain:
+- card-back.png
+- card-frame.png
+- etc. 

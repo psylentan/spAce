@@ -1,0 +1,5 @@
+This is a placeholder file for ship assets.
+In a real implementation, this directory would contain:
+- player-ship.png
+- enemy-ship.png
+- etc. 

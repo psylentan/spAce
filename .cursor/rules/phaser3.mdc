@@ -1,0 +1,119 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+Here's the Phaser 3 Game Blueprint (Space Shooter + Card Hybrid) updated with @naked URLs pointing to official Phaser documentation for each relevant system.
+
+🔧 Phaser Game Initialization
+Phaser Game Config:
+Use Phaser.Game and define canvas, scenes, scaling, physics:
+@https://photonstorm.github.io/phaser3-docs/Phaser.Game.html
+@https://photonstorm.github.io/phaser3-docs/Phaser.Types.Core.GameConfig.html
+
+Scale Settings (responsive canvas):
+Phaser.Scale.FIT, autoCenter, etc.
+@https://photonstorm.github.io/phaser3-docs/Phaser.Scale.html
+
+Arcade Physics (zero gravity for space):
+@https://photonstorm.github.io/phaser3-docs/Phaser.Physics.Arcade.Factory.html
+@https://photonstorm.github.io/phaser3-docs/Phaser.Physics.Arcade.World.html
+
+📜 Scene Management
+Scene Lifecycle (create, update, etc.):
+@https://photonstorm.github.io/phaser3-docs/Phaser.Scene.html
+
+Scene Transitions & Parallel Scenes:
+scene.start(), scene.launch(), scene.stop()
+@https://photonstorm.github.io/phaser3-docs/Phaser.Scenes.ScenePlugin.html
+
+Scene Communication (registry + events):
+@https://photonstorm.github.io/phaser3-docs/Phaser.Data.DataManager.html
+@https://photonstorm.github.io/phaser3-docs/Phaser.Events.EventEmitter.html
+
+🚀 Space Shooter Gameplay (Real-time Scene)
+Sprite Game Objects (Player, Enemies):
+this.physics.add.sprite()
+@https://photonstorm.github.io/phaser3-docs/Phaser.GameObjects.Sprite.html
+
+Arcade Physics – Movement & Collisions:
+setVelocity, overlap, collider, etc.
+@https://photonstorm.github.io/phaser3-docs/Phaser.Physics.Arcade.Components.html
+@https://photonstorm.github.io/phaser3-docs/Phaser.Physics.Arcade.ArcadePhysics.html
+
+Input System – Keyboard & Mouse Controls:
+this.input.keyboard.createCursorKeys()
+@https://photonstorm.github.io/phaser3-docs/Phaser.Input.Keyboard.KeyboardPlugin.html
+@https://photonstorm.github.io/phaser3-docs/Phaser.Input.InputPlugin.html
+
+Groups (Bullets, Enemies):
+@https://photonstorm.github.io/phaser3-docs/Phaser.GameObjects.Group.html
+@https://photonstorm.github.io/phaser3-docs/Phaser.Physics.Arcade.Group.html
+
+Camera (Fixed or Follow Player):
+this.cameras.main.startFollow()
+@https://photonstorm.github.io/phaser3-docs/Phaser.Cameras.Scene2D.Camera.html
+
+TileSprite Backgrounds (for scrolling stars):
+@https://photonstorm.github.io/phaser3-docs/Phaser.GameObjects.TileSprite.html
+
+🃏 Card Battle Gameplay (Turn-based Scene)
+Card Rendering (Sprite + Text):
+this.add.sprite(), this.add.text()
+@https://photonstorm.github.io/phaser3-docs/Phaser.GameObjects.Text.html
+@https://photonstorm.github.io/phaser3-docs/Phaser.GameObjects.Container.html
+
+Interactive Cards (Click/Drag):
+setInteractive(), pointer events
+@https://photonstorm.github.io/phaser3-docs/Phaser.Input.InputPlugin.html#makeInteractive
+
+Tween Effects for UI Feedback:
+@https://photonstorm.github.io/phaser3-docs/Phaser.Tweens.TweenManager.html
+
+🧠 Deck, Crew, and Inventory Management
+Data Manager (for global inventory/crew/flags):
+@https://photonstorm.github.io/phaser3-docs/Phaser.Data.DataManager.html
+
+Text UI for Stats, Descriptions, etc.:
+@https://photonstorm.github.io/phaser3-docs/Phaser.GameObjects.BitmapText.html
+
+Pointer + Buttons (for deck builder, UI navigation):
+@https://photonstorm.github.io/phaser3-docs/Phaser.GameObjects.Image.html#setInteractive
+@https://photonstorm.github.io/phaser3-docs/Phaser.Input.Events.html
+
+🌌 Procedural Generation & Game State
+Random Number Generator (seeded):
+Phaser.Math.RND.init(seed)
+@https://photonstorm.github.io/phaser3-docs/Phaser.Math.RandomDataGenerator.html
+
+Save State to LocalStorage (fallback):
+window.localStorage.setItem()
+@https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage
+
+🌐 Next.js Backend Integration (Persistence)
+HTTP Fetch (from Phaser):
+fetch('/api/profile') or axios.post(...)
+@https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API
+
+Sync Profile/Run State:
+
+/api/profile (GET) – load player profile
+/api/save (POST) – persist run progress
+/api/deck, /api/crew, /api/events (optional modular endpoints)
+📁 Suggested Project Folder Structure
+plaintext
+Copy
+Edit
+/frontend/
+  /pages/              ← Next.js routes
+  /public/             ← Static assets (backgrounds, spritesheets)
+  /src/
+    /game/             ← Phaser game code
+      /scenes/
+      /objects/        ← Player, Enemy, Bullet, Card, etc.
+      /systems/        ← DeckManager, CrewManager
+      /utils/          ← RNG helpers, math, formatting
+/backend/
+  /api/                ← Next.js API routes
+  /models/             ← MongoDB schemas or DB models
+  /utils/              ← Seed generator, card balancing logic
