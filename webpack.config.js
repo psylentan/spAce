@@ -18,7 +18,10 @@ module.exports = {
         ]
     },
     resolve: {
-        extensions: ['.ts', '.js']
+        extensions: ['.ts', '.js'],
+        alias: {
+            '@': path.resolve(__dirname, 'src')
+        }
     },
     plugins: [
         new HtmlWebpackPlugin({
@@ -26,7 +29,8 @@ module.exports = {
         }),
         new CopyWebpackPlugin({
             patterns: [
-                { from: 'src/assets', to: 'assets' }
+                { from: 'src/assets', to: 'assets' },
+                { from: 'src/sounds', to: 'assets/audio' }
             ]
         })
     ],
