@@ -25,3 +25,8 @@ build/
 
 # Debug logs
 debug.log
+
+# Project specific
+.cursor/
+docs/
+Knowledge center/
