@@ -5,13 +5,24 @@ PHASE 0 – FOUNDATION
 Goal: Set up environment, project structure, and planning documents
 
 Milestone 0.1: Project Setup
- Create project with Phaser 3, TypeScript, Webpack/Vite
+✅ Clean up project and initialize fresh repository
+✅ Set up Git with develop branch
+✅ Configure .gitignore for project specifics
+✅ Create project with Phaser 3, TypeScript, Webpack/Vite
+  - ✅ Set up package.json with dependencies
+  - ✅ Configure TypeScript (tsconfig.json)
+  - ✅ Set up Webpack (webpack.config.js)
+  - ✅ Create HTML template and game entry point
 
- Set up scene folder structure
+✅ Set up scene folder structure
+  - src/scenes/core created
 
- Create BootScene, PreloadScene, StartScene
+✅ Create BootScene, PreloadScene, StartScene
+  - ✅ BootScene: Implemented with loading bar assets and physics setup
+  - ✅ PreloadScene: Implemented with loading bar and asset loading
+  - ✅ StartScene: Implemented with main menu and game start
 
- Establish Game Entity Class Map
+🟡 Create Game Entity Class Map
 
 Milestone 0.2: Documentation + AI Prompt Kit
  Maintain and update the Entity & Class Map.
