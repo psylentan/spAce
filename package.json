@@ -27,5 +27,17 @@
   },
   "private": true,
   "author": "",
-  "license": "MIT"
-} 
+  "license": "MIT",
+  "directories": {
+    "doc": "docs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/psylentan/spAce.git"
+  },
+  "keywords": [],
+  "bugs": {
+    "url": "https://github.com/psylentan/spAce/issues"
+  },
+  "homepage": "https://github.com/psylentan/spAce#readme"
+}

@@ -1,6 +1,5 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   entry: './src/game.ts',
@@ -17,7 +16,11 @@ module.exports = {
         exclude: /node_modules/
       },
       {
-        test: /\.(png|svg|jpg|jpeg|gif|ogg|mp3|wav)$/i,
+        test: /\.(png|svg|jpg|jpeg|gif)$/i,
+        type: 'asset/resource'
+      },
+      {
+        test: /\.(wav|mp3|ogg)$/i,
         type: 'asset/resource'
       }
     ]
@@ -32,23 +35,12 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: './src/index.html',
       title: 'Space Game'
-    }),
-    new CopyWebpackPlugin({
-      patterns: [
-        { 
-          from: 'assets',
-          to: 'assets'
-        }
-      ]
     })
   ],
   devServer: {
-    static: {
-      directory: path.join(__dirname, 'dist')
-    },
-    compress: true,
-    port: 9000,
-    hot: true
+    static: './dist',
+    hot: true,
+    port: 3000
   },
-  devtool: 'source-map'
+  devtool: 'inline-source-map'
 }; 
