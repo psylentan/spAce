@@ -1,7 +1,0 @@
-This is a placeholder file for sound assets.
-In a real implementation, this directory would contain:
-- shoot.wav
-- explosion.wav
-- collect.wav
-- card-play.wav
-- etc. 

@@ -1,7 +1,0 @@
-This is a placeholder file for UI assets.
-In a real implementation, this directory would contain:
-- loading-background.png
-- loading-bar.png
-- title.png
-- button.png
-- etc. 

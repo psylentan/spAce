@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg width="32" height="32" version="1.1" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-    <!-- Crate body -->
-    <path d="M8 8L24 8L24 24L8 24Z" fill="#8b6b2d" stroke="#ffffff" stroke-width="2"/>
-    <!-- Crate details -->
-    <path d="M12 8L12 24M16 8L16 24M20 8L20 24M8 12L24 12M8 16L24 16M8 20L24 20" stroke="#4a4a2d" stroke-width="1"/>
-</svg> 

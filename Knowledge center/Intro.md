@@ -1,0 +1,1 @@
+This is a 2D top-down space shooter RPG built with Phaser 3, using TypeScript and Webpack. The player pilots a ship with 360° movement, battles enemies, collects loot, and encounters story/dialog scenes that can lead to card-based battles. The game features RPG systems, procedural zones, a modular inventory, and meta-progression after death.

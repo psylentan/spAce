@@ -1,7 +1,7 @@
 ---
-description: when asked to check the console log or taking a screenshot
+description: 
 globs: 
-alwaysApply: false
+alwaysApply: true
 ---
 First make sure the server is running:
 Server command: npx @agentdeskai/browser-tools-server@1.2.0
