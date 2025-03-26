@@ -28,5 +28,5 @@ debug.log
 
 # Project specific
 .cursor/
-docs/
+/docs/
 Knowledge center/

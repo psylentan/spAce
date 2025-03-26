@@ -1,5 +1,6 @@
 import { Scene } from 'phaser';
 import { ShipConfig, DEFAULT_SHIP_CONFIG } from '../../config/ShipConfig';
+import { CameraController } from '../../controllers/CameraController';
 
 export class FlightScene extends Scene {
     private ship!: Phaser.Physics.Arcade.Sprite;
@@ -7,6 +8,7 @@ export class FlightScene extends Scene {
     private mouseControl: boolean = true;
     private config: ShipConfig;
     private debugText!: Phaser.GameObjects.Text;
+    private cameraController!: CameraController;
 
     constructor() {
         super({ key: 'FlightScene' });
@@ -30,24 +32,34 @@ export class FlightScene extends Scene {
         this.ship.setDrag(this.config.drag);
         this.ship.setAngularDrag(this.config.angularDrag);
 
+        // Initialize camera controller
+        this.cameraController = new CameraController(this, this.ship);
+
         // Setup controls
         this.cursors = this.input.keyboard!.createCursorKeys();
 
         // Add instructions text
-        this.add.text(16, 16, 
+        const instructions = this.add.text(16, 16, 
             'Mouse: Aim ship\n' +
             '↑ (Up Arrow): Thrust forward\n' +
             '↓ (Down Arrow): Brake\n' +
-            'Space: Toggle mouse/keyboard control', 
-            { color: '#ffffff' }
+            'Space: Toggle mouse/keyboard control\n' +
+            'Mouse Wheel: Zoom in/out', 
+            { 
+                color: '#ffffff',
+                backgroundColor: '#000000',
+                padding: { x: 10, y: 10 }
+            }
         );
+        instructions.setScrollFactor(0);
 
         // Add debug text for ship properties
-        this.debugText = this.add.text(16, 120, '', { 
+        this.debugText = this.add.text(16, 140, '', { 
             color: '#00ff00',
             backgroundColor: '#000000',
             padding: { x: 10, y: 10 }
         });
+        this.debugText.setScrollFactor(0);
 
         // Add control toggle
         this.input.keyboard!.addKey('SPACE').on('down', () => {
@@ -103,12 +115,29 @@ export class FlightScene extends Scene {
             body.setAcceleration(0, 0);
         }
 
-        // Handle braking
+        // Handle braking and reverse
         if (this.cursors.down.isDown) {
-            body.setVelocity(
-                body.velocity.x * (1 - this.config.brakeForce),
-                body.velocity.y * (1 - this.config.brakeForce)
-            );
+            const currentSpeed = Math.sqrt(body.velocity.x ** 2 + body.velocity.y ** 2);
+            
+            if (currentSpeed > 0) {
+                // Apply brakes
+                body.setVelocity(
+                    body.velocity.x * (1 - this.config.brakeForce),
+                    body.velocity.y * (1 - this.config.brakeForce)
+                );
+            } else {
+                // Start reverse movement
+                const reverseAcceleration = this.config.reverseAcceleration * deltaTime;
+                if (currentSpeed > -this.config.maxReverseSpeed) {
+                    this.physics.velocityFromRotation(
+                        this.ship.rotation - Math.PI/2,
+                        -reverseAcceleration * 60, // Negative for reverse
+                        body.acceleration
+                    );
+                } else {
+                    body.setAcceleration(0, 0);
+                }
+            }
         }
 
         // Update debug text
@@ -118,7 +147,13 @@ export class FlightScene extends Scene {
             `Max Speed: ${this.config.maxSpeed} px/s`,
             `Acceleration: ${this.config.acceleration} units/s²`,
             `Control: ${this.mouseControl ? 'Mouse' : 'Keyboard'}`,
-            `Position: (${Math.round(this.ship.x)}, ${Math.round(this.ship.y)})`
+            `Position: (${Math.round(this.ship.x)}, ${Math.round(this.ship.y)})`,
+            `Zoom: ${this.cameraController.getZoom().toFixed(2)}x`
         ].join('\n'));
+    }
+
+    shutdown(): void {
+        // Clean up camera controller
+        this.cameraController.destroy();
     }
 } 

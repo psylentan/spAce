@@ -27,34 +27,51 @@ Milestone 0.1: Project Setup
 PHASE 1 – CORE FLIGHT MECHANICS (CURRENT FOCUS)
 Goal: Implement smooth, physics-based ship movement system
 
-Milestone 1.1: Basic Ship Movement (Priority)
- Create FlightScene
-  - Set up Phaser arcade physics
-  - Configure ship physics body
-  - Implement camera follow
+Milestone 1.1: Basic Ship Movement
+✅ Create FlightScene
+  - ✅ Set up Phaser arcade physics
+  - ✅ Configure ship physics body
+  - ✅ Implement basic movement controls
+  - ✅ Add configurable ship properties
+  - ✅ Add real-time debug display
 
- Implement Core Movement Controls
-  - Rotation system (Left/Right arrows)
-  - Forward thrust with inertia (Up arrow)
-  - Braking system (Down arrow)
-  - Maximum speed limits
-  - Physics-based movement
+Milestone 1.2: Enhanced Flight Scene (Current Focus)
+ Viewport & Camera System
+  - [ ] Full window responsive canvas
+  - [ ] Camera follow with smooth tracking
+  - [ ] Zoom functionality (0.5x to 2.0x)
+  - [ ] Layer visibility based on zoom
 
- Basic Layer System
-  - Layer state tracking
-  - Layer transitions (Z/A keys)
-  - Simple visual indicators
+ Star Background System
+  - [ ] Dynamic star field generation
+  - [ ] Layer-based star density
+  - [ ] Multi-layer parallax effects
+  - [ ] Star color and size variation
 
-Milestone 1.2: Movement Polish
+ Layer System (5 Layers)
+  - [ ] Layer state management
+  - [ ] Layer transition effects
+  - [ ] Layer-specific physics
+  - [ ] Visual indicators for current layer
+
+ Cell System
+  - [ ] 19200x19200px cell implementation
+  - [ ] 3x3 active cell grid
+  - [ ] Seamless cell transitions
+  - [ ] Basic procedural generation
+  - [ ] Jump gate system for cell travel
+
+Milestone 1.3: Movement Polish
  Physics Refinement
-  - Fine-tune acceleration/deceleration
-  - Adjust rotation speeds
-  - Optimize collision bounds
+  - [ ] Layer-specific physics tuning
+  - [ ] Optimize collision detection
+  - [ ] Performance optimization
 
- Basic Visual Feedback
-  - Simple movement particles
-  - Layer transition effects
-  - Background parallax
+ Visual Feedback
+  - [ ] Engine particles
+  - [ ] Layer transition effects
+  - [ ] Jump gate animations
+  - [ ] UI overlays for ship status
 
 PHASE 2 – COMBAT MECHANICS (FUTURE)
 Goal: Basic combat system implementation
@@ -115,3 +132,69 @@ Goal: Long-term progression systems
 - Basic layer switching works
 - Stable performance
 - Foundation for future features
+
+## Current Implementation Status
+- ✅ Basic ship movement and controls
+- ✅ Viewport and camera system documentation
+- ✅ Camera follow functionality
+- ✅ Zoom capabilities
+- ⚠️ Reverse movement (needs debugging)
+
+## Secondary Fixes Needed
+1. Debug reverse movement implementation
+   - Verify ship configuration loading
+   - Test braking to reverse transition
+   - Check velocity calculations
+2. Fix development server port conflict
+   - Add fallback port configuration
+   - Implement automatic port switching
+
+## Next Features to Implement
+
+### 1. Background System
+- [ ] Star field implementation
+  - Different star sizes
+  - Varied rotation patterns
+  - Dynamic color variations
+- [ ] Layer system
+  - Depth-based rendering
+  - Parallax effects
+  - Cell-based organization
+
+### 2. Environment Effects
+- [ ] Asteroid belt generation
+- [ ] Comet tail effects
+- [ ] Planetary atmosphere shaders
+- [ ] Nebula effects
+
+### 3. Cell System
+- [ ] Grid-based space division
+- [ ] Cell edge visualization
+- [ ] Cell state management
+- [ ] Transition effects between cells
+
+### 4. Layer Management
+- [ ] Multiple depth layers
+- [ ] Layer transition effects
+- [ ] Layer-specific physics
+- [ ] Layer interaction system
+
+## Implementation Priority
+1. Star field and basic background
+2. Layer system foundation
+3. Cell system implementation
+4. Advanced environment effects
+5. Layer interactions and transitions
+
+## Technical Considerations
+- Optimize particle systems for performance
+- Implement efficient culling for off-screen objects
+- Use shader-based effects where appropriate
+- Maintain smooth transitions between layers
+- Ensure proper cleanup of unused resources
+
+## Testing Requirements
+- Performance benchmarking for particle effects
+- Memory usage monitoring
+- Frame rate stability checks
+- Cross-browser compatibility testing

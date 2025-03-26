@@ -1,40 +1,43 @@
 export interface ShipConfig {
     // Movement
     maxSpeed: number;          // Maximum velocity in pixels/sec
-    acceleration: number;      // Acceleration rate in units/sec²
-    drag: number;             // Base drag force when dampeners are on
+    maxReverseSpeed: number;    // Maximum reverse speed
+    acceleration: number;        // Acceleration rate in units/sec²
+    reverseAcceleration: number;  // Acceleration when in reverse
+    drag: number;                // Base drag force when dampeners are on
     
     // Rotation
-    rotationSpeed: number;    // Keyboard rotation speed in degrees/sec
-    mouseRotationSpeed: number; // Mouse follow rotation multiplier
-    angularDrag: number;      // Angular drag force
+    rotationSpeed: number;        // Keyboard rotation speed in degrees/sec
+    mouseRotationSpeed: number;    // Mouse follow rotation multiplier
+    angularDrag: number;           // Angular drag force
     
     // Braking
-    brakeForce: number;       // Brake force multiplier (0-1)
+    brakeForce: number;            // Brake force multiplier (0-1)
     
     // Boost
-    boostMultiplier: number;  // Speed/acceleration multiplier when boosting
-    boostEnergy: number;      // Maximum boost energy
-    boostDrain: number;       // Energy drain per second while boosting
-    boostRecharge: number;    // Energy recharge per second when not boosting
+    boostMultiplier: number;       // Speed/acceleration multiplier when boosting
+    boostEnergy: number;           // Maximum boost energy
+    boostDrain: number;            // Energy drain per second while boosting
+    boostRecharge: number;         // Energy recharge per second when not boosting
     
     // Precision Mode
-    precisionModeDivisor: number; // Divides all movement values in precision mode
+    precisionModeDivisor: number;   // Divides all movement values in precision mode
 }
 
 export const DEFAULT_SHIP_CONFIG: ShipConfig = {
     // Movement
-    maxSpeed: 700,           // pixels/sec 400
-    acceleration: 120,        // units/sec² 15
-    drag: 75,               // Base drag force 50
+    maxSpeed: 300,
+    maxReverseSpeed: 150, // Half of forward speed for balance
+    acceleration: 200,
+    reverseAcceleration: 100, // Half of forward acceleration
+    drag: 0.99,
     
     // Rotation
-    rotationSpeed: 250,      // degrees/sec 150
-    mouseRotationSpeed: 300, // Multiplier for mouse rotation 200
-    angularDrag: 350,       // Angular drag force 250
+    rotationSpeed: 150,
+    mouseRotationSpeed: 400,
     
     // Braking
-    brakeForce: 0.2,       // 5% velocity reduction per frame 0.05
+    brakeForce: 0.05,
     
     // Boost
     boostMultiplier: 1.9,   // 50% increase in speed/acceleration 1.5
@@ -43,7 +46,10 @@ export const DEFAULT_SHIP_CONFIG: ShipConfig = {
     boostRecharge: 3,       // Units per second 1
     
     // Precision Mode
-    precisionModeDivisor: 3 // Halves all movement values 2
+    precisionModeDivisor: 3, // Halves all movement values 2
+    
+    // Physics
+    angularDrag: 200
 };
 
 // Different ship configurations can be added here
