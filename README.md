@@ -24,111 +24,79 @@ The ship can be controlled using either mouse + keyboard or keyboard only:
 The movement system uses Phaser's arcade physics with the following characteristics:
 
 - Zero gravity environment (space-like)
-- Ship has drag (50) to slow down when not thrusting
-- Angular drag (250) for smooth rotation stop
-- Forward thrust speed of 200 pixels per second
-- Rotation speed varies:
-  - Keyboard: 150 degrees per second
-  - Mouse: Dynamic (smoothly rotates to follow mouse)
-- Brake: Reduces current velocity by 5% per frame
+- Configurable ship properties via ShipConfig
+- Real-time debug display showing speed and position
+- Proper acceleration and max speed implementation
+
+Current ship configuration:
+- Max Speed: 700 pixels/sec
+- Acceleration: 30 units/sec²
+- Rotation Speed: 150-250 degrees/sec
+- Brake Force: 20% velocity reduction per frame
+- Mouse Rotation: Dynamic smooth tracking
 
 ## Ship Physics Mechanics (In Development)
 
-### Current Implementation
-- Basic thrust and rotation
-- Simple drag-based deceleration
-- Basic braking system
+### ✅ Completed Features
+1. Ship Properties
+   - [x] Configurable ship attributes
+   - [x] Proper acceleration system
+   - [x] Max speed limits
+   - [x] Fine-tuned rotation
+   - [x] Improved brake system
+   - [x] Real-time debug display
 
-### Planned Mechanics
+### 🚀 Next Features to Implement
 
-#### 1. Ship Properties
-- **Max Speed**: Maximum velocity the ship can achieve
-  - Regular max speed: 400 pixels/sec
-  - Boost max speed: 600 pixels/sec
-- **Acceleration**: Rate of speed increase
-  - Regular acceleration: 15 units/sec²
-  - Boost acceleration: 25 units/sec²
-- **Rotation Speed**: How quickly the ship turns
-  - Regular turn rate: 150 degrees/sec
-  - Fast turn rate: 250 degrees/sec
-- **Brake Power**: How quickly the ship can stop
-  - Current: 5% velocity reduction per frame
-  - Planned: Variable brake power based on current speed
-
-#### 2. Advanced Movement Features
-- **Inertial Dampeners**
+#### 1. Advanced Movement Features
+- **Inertial Dampeners** (Next Up)
   - Toggle between Newtonian and dampened physics
   - Dampeners ON: Current drag-based system
   - Dampeners OFF: Pure inertial movement
+  - Keyboard shortcut: 'I' key
+
 - **Boost System**
   - Temporary speed and acceleration increase
   - Limited by boost energy meter
   - Recharge when not in use
+  - Keyboard shortcut: 'Shift' key
+
 - **Precision Mode**
   - Toggle for fine-tuned movement
   - Reduces all movement values by 50%
   - Useful for docking and precise maneuvers
+  - Keyboard shortcut: 'C' key
 
-#### 3. Visual Feedback
-- Engine thrust particles
-- Brake effect indicators
-- Speed lines at high velocity
-- Boost energy meter
-- Current velocity indicator
+#### 2. Visual Feedback
+- **Particle Effects**
+  - Engine thrust particles
+  - Brake effect indicators
+  - Direction indicator
+
+- **UI Elements**
+  - Speed indicator with max speed warning
+  - Boost energy meter
+  - Current mode indicators (Dampeners/Precision)
+  - Mini-map or position indicator
 
 ### Implementation Priority
-1. Ship property refinement
-   - [ ] Implement proper acceleration
-   - [ ] Add max speed limits
-   - [ ] Fine-tune rotation speeds
-   - [ ] Improve brake system
 
-2. Advanced movement
-   - [ ] Inertial dampener system
-   - [ ] Boost mechanics
-   - [ ] Precision mode
+1. Inertial Dampeners (Next Feature)
+   - [ ] Add dampener toggle
+   - [ ] Implement pure Newtonian physics mode
+   - [ ] Add visual indicator for dampener state
+   - [ ] Update debug display with current mode
 
-3. Visual feedback
-   - [ ] Particle systems
-   - [ ] UI indicators
+2. Boost System
+   - [ ] Add energy system
+   - [ ] Implement boost mechanics
+   - [ ] Add energy UI
+   - [ ] Add boost particles
+
+3. Visual Feedback
+   - [ ] Engine particles
+   - [ ] UI overlays
    - [ ] Speed effects
-
-## Physics Implementation Details
-
-### 1. Acceleration System
-```typescript
-// Planned implementation
-acceleration = 15; // units/sec²
-maxSpeed = 400;
-currentSpeed = Math.sqrt(velocity.x² + velocity.y²);
-if (currentSpeed < maxSpeed) {
-    // Apply acceleration in ship's facing direction
-    // Account for frame delta time
-}
-```
-
-### 2. Inertial Movement
-```typescript
-// With dampeners
-drag = 50;
-angularDrag = 250;
-
-// Without dampeners
-drag = 0;
-angularDrag = 0;
-// Manual deceleration required
-```
-
-### 3. Boost System
-```typescript
-// Boost properties
-boostEnergy = 100;
-boostDrain = 2;
-boostRecharge = 1;
-// Activate: Increase acceleration and max speed
-// Deactivate: Return to normal values
-// Monitor and update energy levels
-```
 
 ## Development
 
