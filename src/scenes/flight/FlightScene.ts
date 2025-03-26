@@ -25,15 +25,17 @@ export class FlightScene extends Scene {
     create(): void {
         // Create star field background
         this.starField = new StarField(this, {
-            depth: -1,
-            count: 300,
-            colors: [0xFFFFFF, 0xFFD700, 0x87CEEB, 0xFFB6C1, 0x98FB98], // Add light green
-            minSize: 1,
-            maxSize: 4,
-            minSpeed: 20,
-            maxSpeed: 60,
-            followCamera: true,
-            parallaxFactor: 0.5
+            depth: -1000,
+            layerCount: 3,
+            starsPerLayer: 300,
+            minSpeed: 0.2,
+            maxSpeed: 0.8,
+            minStarSize: 1,
+            maxStarSize: 3,
+            colors: [0xFFFFFF, 0xFFD700, 0x87CEEB, 0xFFB6C1, 0x98FB98],
+            backgroundColor: 0x000000,
+            width: 4000,  // Much larger area
+            height: 4000  // Much larger area
         });
 
         // Create ship in the center
