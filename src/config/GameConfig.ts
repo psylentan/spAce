@@ -1,4 +1,5 @@
 import { Types, AUTO, Scale } from 'phaser';
+import { FlightScene } from '../scenes/flight/FlightScene';
 
 export const GameConfig: Types.Core.GameConfig = {
     type: AUTO,
@@ -9,7 +10,7 @@ export const GameConfig: Types.Core.GameConfig = {
     physics: {
         default: 'arcade',
         arcade: {
-            gravity: { y: 0 },
+            gravity: { x: 0, y: 0 },
             debug: process.env.NODE_ENV === 'development'
         }
     },
@@ -17,5 +18,6 @@ export const GameConfig: Types.Core.GameConfig = {
         mode: Scale.FIT,
         autoCenter: Scale.CENTER_BOTH
     },
-    pixelArt: true
+    pixelArt: true,
+    scene: [FlightScene]
 }; 

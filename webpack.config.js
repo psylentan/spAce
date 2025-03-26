@@ -38,9 +38,23 @@ module.exports = {
     })
   ],
   devServer: {
-    static: './dist',
+    static: [
+      {
+        directory: path.join(__dirname, 'dist'),
+        publicPath: '/'
+      },
+      {
+        directory: path.join(__dirname, './'),
+        publicPath: '/'
+      }
+    ],
     hot: true,
-    port: 3000
+    port: 3000,
+    open: true,
+    client: {
+      overlay: true
+    }
   },
-  devtool: 'inline-source-map'
+  devtool: 'eval-source-map',
+  mode: 'development'
 }; 
