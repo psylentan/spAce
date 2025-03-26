@@ -2,13 +2,22 @@
 
 A simple space game built with Phaser 3.
 
-## Basic Controls
+## Controls
 
-The ship can be controlled using the arrow keys:
+The ship can be controlled using either mouse + keyboard or keyboard only:
 
+### Mouse + Keyboard (Default)
+- **Mouse Movement**: Aim the ship (ship will rotate to follow mouse)
+- `↑` (Up Arrow): Thrust forward in the direction the ship is facing
+- `↓` (Down Arrow): Brake (reduces current velocity)
+- `Space`: Toggle between mouse/keyboard control modes
+
+### Keyboard Only Mode
 - `←` (Left Arrow): Rotate ship counter-clockwise
 - `→` (Right Arrow): Rotate ship clockwise
-- `↑` (Up Arrow): Move ship forward in the direction it's facing
+- `↑` (Up Arrow): Thrust forward in the direction the ship is facing
+- `↓` (Down Arrow): Brake (reduces current velocity)
+- `Space`: Toggle between mouse/keyboard control modes
 
 ## Movement System
 
@@ -18,7 +27,10 @@ The movement system uses Phaser's arcade physics with the following characterist
 - Ship has drag (50) to slow down when not thrusting
 - Angular drag (250) for smooth rotation stop
 - Forward thrust speed of 200 pixels per second
-- Rotation speed of 150 degrees per second
+- Rotation speed varies:
+  - Keyboard: 150 degrees per second
+  - Mouse: Dynamic (smoothly rotates to follow mouse)
+- Brake: Reduces current velocity by 5% per frame
 
 ## Development
 
