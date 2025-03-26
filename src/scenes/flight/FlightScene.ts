@@ -2,6 +2,7 @@ import { Scene } from 'phaser';
 import { ShipConfig, DEFAULT_SHIP_CONFIG } from '../../config/ShipConfig';
 import { CameraController } from '../../controllers/CameraController';
 import { StarField } from '../../systems/StarField';
+import { MeteoriteBelt } from '../../systems/MeteoriteBelt';
 
 export class FlightScene extends Scene {
     private ship!: Phaser.Physics.Arcade.Sprite;
@@ -11,6 +12,7 @@ export class FlightScene extends Scene {
     private debugText!: Phaser.GameObjects.Text;
     private cameraController!: CameraController;
     private starField!: StarField;
+    private meteoriteBelt!: MeteoriteBelt;
 
     constructor() {
         super({ key: 'FlightScene' });
@@ -23,7 +25,7 @@ export class FlightScene extends Scene {
     }
 
     create(): void {
-        // Create star field background
+        // Create background layers
         this.starField = new StarField(this, {
             depth: -1000,
             layerCount: 3,
@@ -34,8 +36,18 @@ export class FlightScene extends Scene {
             maxStarSize: 3,
             colors: [0xFFFFFF, 0xFFD700, 0x87CEEB, 0xFFB6C1, 0x98FB98],
             backgroundColor: 0x000000,
-            width: 4000,  // Much larger area
-            height: 4000  // Much larger area
+            width: 4000,
+            height: 4000
+        });
+
+        this.meteoriteBelt = new MeteoriteBelt(this, {
+            depth: -950,
+            smallCount: 150,
+            largeCount: 8,
+            beltWidth: 3000,
+            beltHeight: 800,
+            beltAngle: 20,
+            parallaxFactor: 0.8
         });
 
         // Create ship in the center
@@ -174,5 +186,8 @@ export class FlightScene extends Scene {
         this.cameraController.destroy();
         // Clean up star field
         this.starField.destroy();
+        if (this.meteoriteBelt) {
+            this.meteoriteBelt.destroy();
+        }
     }
 } 
