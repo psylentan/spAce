@@ -1,6 +1,7 @@
 import { Scene } from 'phaser';
 import { ShipConfig, DEFAULT_SHIP_CONFIG } from '../../config/ShipConfig';
 import { CameraController } from '../../controllers/CameraController';
+import { StarField } from '../../systems/StarField';
 
 export class FlightScene extends Scene {
     private ship!: Phaser.Physics.Arcade.Sprite;
@@ -9,6 +10,7 @@ export class FlightScene extends Scene {
     private config: ShipConfig;
     private debugText!: Phaser.GameObjects.Text;
     private cameraController!: CameraController;
+    private starField!: StarField;
 
     constructor() {
         super({ key: 'FlightScene' });
@@ -21,6 +23,19 @@ export class FlightScene extends Scene {
     }
 
     create(): void {
+        // Create star field background
+        this.starField = new StarField(this, {
+            depth: -1,
+            count: 300,
+            colors: [0xFFFFFF, 0xFFD700, 0x87CEEB, 0xFFB6C1, 0x98FB98], // Add light green
+            minSize: 1,
+            maxSize: 4,
+            minSpeed: 20,
+            maxSpeed: 60,
+            followCamera: true,
+            parallaxFactor: 0.5
+        });
+
         // Create ship in the center
         this.ship = this.physics.add.sprite(
             this.cameras.main.centerX,
@@ -42,7 +57,7 @@ export class FlightScene extends Scene {
         const instructions = this.add.text(16, 16, 
             'Mouse: Aim ship\n' +
             '↑ (Up Arrow): Thrust forward\n' +
-            '↓ (Down Arrow): Brake\n' +
+            '↓ (Down Arrow): Brake/Reverse\n' +
             'Space: Toggle mouse/keyboard control\n' +
             'Mouse Wheel: Zoom in/out', 
             { 
@@ -155,5 +170,7 @@ export class FlightScene extends Scene {
     shutdown(): void {
         // Clean up camera controller
         this.cameraController.destroy();
+        // Clean up star field
+        this.starField.destroy();
     }
 } 
