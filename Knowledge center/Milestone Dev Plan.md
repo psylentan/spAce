@@ -24,120 +24,94 @@ Milestone 0.1: Project Setup
 
 🟡 Create Game Entity Class Map
 
-Milestone 0.2: Documentation + AI Prompt Kit
- Maintain and update the Entity & Class Map.
+PHASE 1 – CORE FLIGHT MECHANICS (CURRENT FOCUS)
+Goal: Implement smooth, physics-based ship movement system
 
- Create AI prompt snippets for modular systems (e.g., creating player effects, weapon systems, enemies).
+Milestone 1.1: Basic Ship Movement (Priority)
+ Create FlightScene
+  - Set up Phaser arcade physics
+  - Configure ship physics body
+  - Implement camera follow
 
-PHASE 1 – CORE GAME LOOP
-Goal: Basic player movement, combat, and collision
+ Implement Core Movement Controls
+  - Rotation system (Left/Right arrows)
+  - Forward thrust with inertia (Up arrow)
+  - Braking system (Down arrow)
+  - Maximum speed limits
+  - Physics-based movement
 
-Milestone 1.1: Player Flight
- Create GameScene
+ Basic Layer System
+  - Layer state tracking
+  - Layer transitions (Z/A keys)
+  - Simple visual indicators
 
- Develop PlayerShip class (360° movement, shooting)
+Milestone 1.2: Movement Polish
+ Physics Refinement
+  - Fine-tune acceleration/deceleration
+  - Adjust rotation speeds
+  - Optimize collision bounds
 
- Implement camera follow + parallax backgrounds
+ Basic Visual Feedback
+  - Simple movement particles
+  - Layer transition effects
+  - Background parallax
 
-Milestone 1.2: Player Shooting
+PHASE 2 – COMBAT MECHANICS (FUTURE)
+Goal: Basic combat system implementation
+
+Milestone 2.1: Weapon Systems
  Create Bullet class
+ Implement basic shooting
+ Add weapon cooldown system
 
- Implement shooting mechanic (on mouse click)
+Milestone 2.2: Basic Enemies
+ Create Enemy class
+ Implement basic AI
+ Handle collisions
 
- Add cooldown and ammo management
+PHASE 3 – LAYER EFFECTS (FUTURE)
+Goal: Enhanced layer system with environmental effects
 
-Milestone 1.3: Basic Enemies
- Create simple enemy class (Enemy)
+Milestone 3.1: Layer Enhancement
+ Advanced layer transitions
+ Environmental particle systems
+ Layer-specific physics modifications
 
- Implement basic AI (enemy follows player, shoots)
+Milestone 3.2: Visual Polish
+ Enhanced particle effects
+ Ship appearance modifications
+ Layer-specific backgrounds
 
- Handle enemy HP, death, and loot drops
+PHASE 4 – UI & HUD (FUTURE)
+Goal: Game interface and player feedback
 
-Milestone 1.4: Collisions + Effects
- Bullet ↔ Enemy collision
+Milestone 4.1: Basic HUD
+ Speed and direction indicators
+ Layer depth display
+ Basic status information
 
- Explosion effects + damage application (visual + sound)
+PHASE 5 – ENCOUNTERS & CARDS (FUTURE)
+Goal: Strategic gameplay elements
 
-PHASE 2 – POWERUPS + EFFECTS
-Goal: Buffs, pickups, and effect system logic
+PHASE 6 – META & PROGRESSION (FUTURE)
+Goal: Long-term progression systems
 
-Milestone 2.1: PowerUps
- Implement PowerUp class (health, speed boosts)
+## Implementation Notes
+- Focus on smooth, satisfying movement first
+- Keep systems modular and extensible
+- Prioritize playability over visual polish
+- Build foundation for future features
 
- Create loot drop system for power-ups
+## Current Sprint (Core Flight Mechanics)
+1. Set up FlightScene
+2. Implement basic ship physics
+3. Add core movement controls
+4. Create simple layer system
+5. Test and refine movement feel
 
- Allow player to collect power-ups
-
-Milestone 2.2: Effect System
- Implement Effect and EffectManager
-
- Add buffs/debuffs (speed, damage, etc.)
-
- Handle duration and stacking rules for effects
-
-PHASE 3 – UI & HUD
-Goal: Real-time player stats and scene overlays
-
-Milestone 3.1: HUDScene
- Create HUD overlay for HP, XP, resources
-
- Implement real-time updates for player stats
-
-Milestone 3.2: Pause + GameOver
- Implement PauseScene toggle
-
- Create GameOverScene with stats and meta currency options
-
-PHASE 4 – ENCOUNTERS + CARDS
-Goal: Narrative choices + card battle system
-
-Milestone 4.1: Encounter Flow
- Trigger EncounterScene with choice tree (accept/flee, etc.)
-
- Implement simple choice interactions that affect the game
-
-Milestone 4.2: Card Battle Prototype
- Implement Card and Deck systems
-
- Implement basic turn-based combat (card play, enemy counterattacks)
-
- Define win/lose conditions based on deck cards
-
-PHASE 5 – META & PROGRESSION
-Goal: Meta-currency, rebirth, and persistent upgrades
-
-Milestone 5.1: Death & Rebirth
- Create RebirthScene with stats summary
-
- Award meta currency upon death
-
- Save progress in localStorage for future runs
-
-Milestone 5.2: Meta Upgrades
- Implement meta upgrade shop
-
- Apply upgrades to future runs (e.g., permanent upgrades, faster leveling)
-
-PHASE 6 – AI COMPANION (Optional Bonus)
-Goal: Evolving AI assistant for ship
-
-Milestone 6.1: AI Chat Interface
- Create ShipAI class + dialogue system
-
- Develop AI responses based on player stats and events
-
-Milestone 6.2: LLM Integration
- Integrate an external/local AI model for advanced dialogue
-
- Implement profile-based responses and system evolution
-
-Tip: Use a readyToBuild.md file
-Keep a backlog of future content for the game:
-
-New Enemies
-
-PowerUps and Cards
-
-Effects and AI quotes
-
-This keeps the workflow modular and manageable—pick one item per session to build/test.
+## Success Criteria
+- Smooth, responsive controls
+- Proper physics-based movement
+- Basic layer switching works
+- Stable performance
+- Foundation for future features
