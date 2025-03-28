@@ -25,7 +25,10 @@ export class TestScene extends Scene {
     }
 
     preload(): void {
-        // Generate placeholder assets instead of loading external images
+        // Load the actual player ship asset
+        this.load.image('ship_player', 'assets/sprites/starship200.png');
+        
+        // Generate other placeholder assets
         const placeholderAssets = new PlaceholderAssets(this);
         placeholderAssets.generatePlaceholders();
     }

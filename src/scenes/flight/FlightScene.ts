@@ -3,6 +3,7 @@ import { ShipConfig, DEFAULT_SHIP_CONFIG } from '../../config/ShipConfig';
 import { CameraController } from '../../controllers/CameraController';
 import { StarField } from '../../systems/StarField';
 import { MeteoriteBelt } from '../../systems/MeteoriteBelt';
+import { LayerManager, LayerConfig } from '../../systems/LayerManager';
 
 export class FlightScene extends Scene {
     private ship!: Phaser.Physics.Arcade.Sprite;
@@ -13,6 +14,10 @@ export class FlightScene extends Scene {
     private cameraController!: CameraController;
     private starField!: StarField;
     private meteoriteBelt!: MeteoriteBelt;
+    private layerManager!: LayerManager;
+    private layerText!: Phaser.GameObjects.Text;
+    private layerTransitionParticles: Phaser.GameObjects.Particles.ParticleEmitter | null = null;
+    private denseStarField!: StarField;
 
     constructor() {
         super({ key: 'FlightScene' });
@@ -20,25 +25,103 @@ export class FlightScene extends Scene {
     }
 
     preload(): void {
-        // Load the ship sprite
-        this.load.image('ship', '/assets/sprites/ship_placeholder.png');
+        // Load the new detailed starship sprite
+        this.load.image('ship', '/assets/sprites/starship200.png')
+            .on('filecomplete-image-ship', () => {
+                console.log('Ship sprite loaded successfully');
+            })
+            .on('loaderror', (file: any) => {
+                console.error('Failed to load ship sprite - falling back to placeholder', file);
+                // If the main sprite fails, we'll create a placeholder
+                const graphics = this.add.graphics();
+                graphics.lineStyle(2, 0x00ff00);
+                graphics.strokeTriangle(0, -15, 15, 15, -15, 15);
+                graphics.generateTexture('ship', 30, 30);
+                graphics.destroy();
+            });
     }
 
     create(): void {
+        // Create background layers first
+        this.setupBackgroundLayers();
+
+        // Create ship with guaranteed loaded texture
+        this.setupShip();
+
+        // Setup camera and controls after ship
+        this.setupCameraAndControls();
+
+        // Setup UI elements last
+        this.setupUIElements();
+    }
+
+    private setupShip(): void {
+        // Create ship in the center with adjusted properties for the new detailed design
+        this.ship = this.physics.add.sprite(
+            this.cameras.main.centerX,
+            this.cameras.main.centerY,
+            'ship'
+        );
+
+        // Force immediate scale update
+        this.ship.setScale(0.15);
+        
+        // Ensure scale is applied after next frame
+        this.time.delayedCall(0, () => {
+            this.ship.setScale(0.15);
+            console.log('Ship scale after delay:', this.ship.scale);
+        });
+
+        // Configure ship appearance and physics
+        this.ship.setDepth(100);   // Ensure ship renders above background elements
+        this.ship.setAngle(90);
+        
+        // Apply enhanced physics properties
+        this.ship.setDrag(this.config.drag);
+        this.ship.setAngularDrag(this.config.angularDrag);
+        this.ship.setMass(1.5);
+        this.ship.setMaxVelocity(this.config.maxSpeed);
+        
+        // Set collision body size to match the visible ship (after scaling)
+        const scaledWidth = this.ship.displayWidth;
+        const scaledHeight = this.ship.displayHeight;
+        this.ship.setSize(scaledWidth * 0.8, scaledHeight * 0.8);
+        this.ship.setOffset(scaledWidth * 0.1, scaledHeight * 0.1);
+    }
+
+    private setupBackgroundLayers(): void {
         // Create background layers
         this.starField = new StarField(this, {
             depth: -1000,
-            layerCount: 3,
-            starsPerLayer: 300,
+            layerCount: 2,
+            starsPerLayer: 200,
             minSpeed: 0.2,
             maxSpeed: 0.8,
             minStarSize: 1,
             maxStarSize: 3,
-            colors: [0xFFFFFF, 0xFFD700, 0x87CEEB, 0xFFB6C1, 0x98FB98],
+            colors: [0xFFFFFF, 0x87CEEB],
             backgroundColor: 0x000000,
             width: 4000,
             height: 4000
         });
+        this.starField.setVisible(true);
+        this.starField.setAlpha(1);
+
+        this.denseStarField = new StarField(this, {
+            depth: -900,
+            layerCount: 2,
+            starsPerLayer: 800,
+            minSpeed: 0.4,
+            maxSpeed: 1.2,
+            minStarSize: 1,
+            maxStarSize: 5,
+            colors: [0xFF4444, 0xFF8866, 0xFFAA88],
+            backgroundColor: 0x110000,
+            width: 4000,
+            height: 4000
+        });
+        this.denseStarField.setVisible(true);
+        this.denseStarField.setAlpha(0);
 
         this.meteoriteBelt = new MeteoriteBelt(this, {
             depth: -950,
@@ -49,24 +132,53 @@ export class FlightScene extends Scene {
             beltAngle: 20,
             parallaxFactor: 0.8
         });
+        this.meteoriteBelt.setVisible(true);
 
-        // Create ship in the center
-        this.ship = this.physics.add.sprite(
-            this.cameras.main.centerX,
-            this.cameras.main.centerY,
-            'ship'
-        );
+        // Initialize layer system
+        const layerConfig: LayerConfig = {
+            totalLayers: 2,
+            transitionDuration: 800,
+            depthSpacing: 1000,
+            scaleRange: { min: 0.6, max: 1.4 },
+            alphaRange: { min: 0.3, max: 1.0 },
+            layerEffects: [
+                { tint: 0xFFFFFF },  // Normal space
+                { tint: 0xFF9966 }   // Orange-red tint for dense layer
+            ]
+        };
+        
+        this.layerManager = new LayerManager(this, layerConfig);
 
-        // Apply physics properties from config
-        this.ship.setDrag(this.config.drag);
-        this.ship.setAngularDrag(this.config.angularDrag);
+        // Add layer indicator
+        this.layerText = this.add.text(16, 180, 'Layer: Base', {
+            fontSize: '18px',
+            color: '#ffffff',
+            backgroundColor: '#000000',
+            padding: { x: 8, y: 4 }
+        }).setScrollFactor(0).setDepth(1000);
 
-        // Initialize camera controller
+        // Add keyboard controls for layer movement
+        if (this.input.keyboard) {
+            this.input.keyboard.on('keydown-Q', () => this.moveLayer('up'));
+            this.input.keyboard.on('keydown-E', () => this.moveLayer('down'));
+        }
+    }
+
+    private setupCameraAndControls(): void {
+        // Initialize camera controller with adjusted zoom
         this.cameraController = new CameraController(this, this.ship);
+        this.cameras.main.setZoom(1);
 
         // Setup controls
         this.cursors = this.input.keyboard!.createCursorKeys();
 
+        // Add control toggle
+        this.input.keyboard!.addKey('SPACE').on('down', () => {
+            this.mouseControl = !this.mouseControl;
+        });
+    }
+
+    private setupUIElements(): void {
         // Add instructions text
         const instructions = this.add.text(16, 16, 
             'Mouse: Aim ship\n' +
@@ -81,22 +193,124 @@ export class FlightScene extends Scene {
             }
         );
         instructions.setScrollFactor(0);
+        instructions.setDepth(1000);
 
-        // Add debug text for ship properties
+        // Add debug text
         this.debugText = this.add.text(16, 140, '', { 
             color: '#00ff00',
             backgroundColor: '#000000',
             padding: { x: 10, y: 10 }
         });
         this.debugText.setScrollFactor(0);
+        this.debugText.setDepth(1000);
 
-        // Add control toggle
-        this.input.keyboard!.addKey('SPACE').on('down', () => {
-            this.mouseControl = !this.mouseControl;
+        // Setup debug info updates
+        const updateDebugInfo = () => {
+            if (this.ship && this.ship.body && this.debugText) {
+                const velocity = this.ship.body.velocity;
+                const speed = velocity ? Math.sqrt(velocity.x ** 2 + velocity.y ** 2) : 0;
+                
+                this.debugText.setText(
+                    `Ship Scale: ${this.ship.scale}\n` +
+                    `Width: ${this.ship.displayWidth.toFixed(1)}px\n` +
+                    `Height: ${this.ship.displayHeight.toFixed(1)}px\n` +
+                    `Speed: ${speed.toFixed(1)} px/s`
+                );
+            }
+        };
+        
+        updateDebugInfo();
+        this.time.addEvent({
+            delay: 100,
+            callback: updateDebugInfo,
+            loop: true
         });
     }
 
+    private async moveLayer(direction: 'up' | 'down'): Promise<void> {
+        if (this.layerManager.isTransitioning()) return;
+
+        const currentLayer = this.layerManager.getCurrentLayer();
+        const targetLayer = direction === 'up' ? 1 : 0;
+
+        if (currentLayer === targetLayer) return;
+
+        // Toggle star field visibility with a dramatic fade
+        const fadeOutField = direction === 'up' ? this.starField : this.denseStarField;
+        const fadeInField = direction === 'up' ? this.denseStarField : this.starField;
+        
+        if (fadeOutField && fadeInField) {
+            // Flash effect on the ship
+            this.tweens.add({
+                targets: this.ship,
+                alpha: 0.3,
+                yoyo: true,
+                duration: 200,
+                ease: 'Cubic.easeInOut'
+            });
+
+            // Camera shake effect
+            this.cameras.main.shake(300, 0.003);
+
+            // Dramatic zoom effect
+            this.tweens.add({
+                targets: this.cameras.main,
+                zoom: direction === 'up' ? 1.1 : 0.9,
+                duration: 400,
+                yoyo: true,
+                ease: 'Quad.easeInOut'
+            });
+
+            // Fade transition between star fields with different timing
+            this.tweens.add({
+                targets: fadeOutField,
+                alpha: 0,
+                duration: 600,
+                ease: 'Power2'
+            });
+
+            this.tweens.add({
+                targets: fadeInField,
+                alpha: 1,
+                duration: 600,
+                ease: 'Power2'
+            });
+
+            // Update layer text with color
+            this.layerText.setText(`Layer: ${direction === 'up' ? 'Dense' : 'Base'}`);
+            this.layerText.setColor(direction === 'up' ? '#ff9966' : '#ffffff');
+            
+            // Move game objects to new layer
+            await this.layerManager.moveToLayer(targetLayer);
+
+            // Update physics for the new layer
+            this.updateLayerPhysics(targetLayer);
+        }
+    }
+
+    private updateLayerPhysics(layer: number): void {
+        // More dramatic physics changes between layers
+        const physics = layer === 0 ? {
+            // Base layer - normal physics
+            drag: 0.99,
+            maxVelocity: 300,
+            acceleration: 200
+        } : {
+            // Dense layer - much more resistance
+            drag: 0.95,           // More drag
+            maxVelocity: 200,     // Lower max speed
+            acceleration: 150      // Lower acceleration
+        };
+
+        // Apply physics settings
+        this.ship.setDrag(physics.drag);
+        this.ship.setMaxVelocity(physics.maxVelocity);
+        this.config.acceleration = physics.acceleration;
+    }
+
     update(): void {
+        if (!this.ship || !this.ship.body) return;
+
         const body = this.ship.body as Phaser.Physics.Arcade.Body;
         const deltaTime = this.game.loop.delta / 1000; // Convert to seconds
 
@@ -134,7 +348,7 @@ export class FlightScene extends Scene {
                 const acceleration = this.config.acceleration * deltaTime;
                 this.physics.velocityFromRotation(
                     this.ship.rotation - Math.PI/2,
-                    acceleration * 60, // Convert to pixels per frame
+                    acceleration * 60,
                     body.acceleration
                 );
             } else {
@@ -149,18 +363,16 @@ export class FlightScene extends Scene {
             const currentSpeed = Math.sqrt(body.velocity.x ** 2 + body.velocity.y ** 2);
             
             if (currentSpeed > 0) {
-                // Apply brakes
                 body.setVelocity(
                     body.velocity.x * (1 - this.config.brakeForce),
                     body.velocity.y * (1 - this.config.brakeForce)
                 );
             } else {
-                // Start reverse movement
                 const reverseAcceleration = this.config.reverseAcceleration * deltaTime;
                 if (currentSpeed > -this.config.maxReverseSpeed) {
                     this.physics.velocityFromRotation(
                         this.ship.rotation - Math.PI/2,
-                        -reverseAcceleration * 60, // Negative for reverse
+                        -reverseAcceleration * 60,
                         body.acceleration
                     );
                 } else {
@@ -179,6 +391,11 @@ export class FlightScene extends Scene {
             `Position: (${Math.round(this.ship.x)}, ${Math.round(this.ship.y)})`,
             `Zoom: ${this.cameraController.getZoom().toFixed(2)}x`
         ].join('\n'));
+
+        // Update layer transition particles if they exist
+        if (this.layerManager?.isTransitioning() && this.layerTransitionParticles && this.ship) {
+            this.layerTransitionParticles.setPosition(this.ship.x, this.ship.y);
+        }
     }
 
     shutdown(): void {

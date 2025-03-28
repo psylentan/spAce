@@ -1,12 +1,14 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   entry: './src/game.ts',
   output: {
     filename: 'bundle.js',
     path: path.resolve(__dirname, 'dist'),
-    clean: true
+    clean: true,
+    publicPath: '/'
   },
   module: {
     rules: [
@@ -35,17 +37,31 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: './src/index.html',
       title: 'Space Game'
+    }),
+    new CopyWebpackPlugin({
+      patterns: [
+        { 
+          from: path.resolve(__dirname, 'public'),
+          to: path.resolve(__dirname, 'dist')
+        },
+        {
+          from: path.resolve(__dirname, 'assets'),
+          to: path.resolve(__dirname, 'dist/assets')
+        }
+      ]
     })
   ],
   devServer: {
     static: [
       {
-        directory: path.join(__dirname, 'dist'),
-        publicPath: '/'
+        directory: path.resolve(__dirname, 'public'),
+        publicPath: '/',
+        watch: true
       },
       {
-        directory: path.join(__dirname, './'),
-        publicPath: '/'
+        directory: path.resolve(__dirname, 'assets'),
+        publicPath: '/assets',
+        watch: true
       }
     ],
     hot: true,

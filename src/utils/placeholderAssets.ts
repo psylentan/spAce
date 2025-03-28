@@ -10,7 +10,7 @@ export class PlaceholderAssets {
     }
 
     generatePlaceholders(): void {
-        this.createShipPlaceholder('ship_player', 0x00ff00);
+        // Player ship is now loaded from asset file
         this.createShipPlaceholder('ship_enemy', 0xff0000);
         this.createCirclePlaceholder('powerup_speed', 0x00ffff);
         this.createCirclePlaceholder('powerup_health', 0xff00ff);

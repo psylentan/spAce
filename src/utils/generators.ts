@@ -65,6 +65,11 @@ export class EntityGenerator {
         ship.setData('stats', config.stats);
         ship.setData('weapon', config.weapon);
         
+        // Scale down the player ship significantly
+        if (config.type === 'player') {
+            ship.setScale(0.05); // Try a much smaller scale (5% of original size)
+        }
+        
         // Set physics properties
         ship.setDrag(100);
         ship.setAngularDrag(100);

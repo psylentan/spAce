@@ -25,6 +25,10 @@ export class PreloadScene extends Scene {
 
         // Load game assets
         this.loadGameAssets();
+
+        // Load layer transition assets
+        this.load.atlas('flares', 'assets/particles/flares.png', 'assets/particles/flares.json');
+        this.load.audio('layer_shift', ['assets/audio/layer_shift.mp3']);
     }
 
     create(): void {
