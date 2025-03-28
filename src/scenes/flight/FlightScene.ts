@@ -4,9 +4,16 @@ import { CameraController } from '../../controllers/CameraController';
 import { StarField } from '../../systems/StarField';
 import { MeteoriteBelt } from '../../systems/MeteoriteBelt';
 import { LayerManager, LayerConfig } from '../../systems/LayerManager';
+import { WeaponSystem } from '../../systems/weapons/WeaponSystem';
+
+declare module 'phaser' {
+    interface Scene {
+        ship: Phaser.Physics.Arcade.Sprite;
+    }
+}
 
 export class FlightScene extends Scene {
-    private ship!: Phaser.Physics.Arcade.Sprite;
+    public ship!: Phaser.Physics.Arcade.Sprite;
     private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
     private mouseControl: boolean = true;
     private config: ShipConfig;
@@ -18,6 +25,7 @@ export class FlightScene extends Scene {
     private layerText!: Phaser.GameObjects.Text;
     private layerTransitionParticles: Phaser.GameObjects.Particles.ParticleEmitter | null = null;
     private denseStarField!: StarField;
+    private weaponSystem!: WeaponSystem;
 
     constructor() {
         super({ key: 'FlightScene' });
@@ -25,20 +33,33 @@ export class FlightScene extends Scene {
     }
 
     preload(): void {
-        // Load the new detailed starship sprite
-        this.load.image('ship', '/assets/sprites/starship200.png')
-            .on('filecomplete-image-ship', () => {
-                console.log('Ship sprite loaded successfully');
-            })
-            .on('loaderror', (file: any) => {
-                console.error('Failed to load ship sprite - falling back to placeholder', file);
-                // If the main sprite fails, we'll create a placeholder
-                const graphics = this.add.graphics();
-                graphics.lineStyle(2, 0x00ff00);
-                graphics.strokeTriangle(0, -15, 15, 15, -15, 15);
-                graphics.generateTexture('ship', 30, 30);
-                graphics.destroy();
-            });
+        // Load ship sprite
+        this.load.image('ship', 'assets/sprites/starship200.png');
+
+        // Generate and preload weapon sounds
+        const { plasmaFire, weaponReady, rocketFire } = WeaponSystem.generateWeaponSounds();
+        
+        // Create Blobs from the ArrayBuffers
+        const plasmaBlob = new Blob([plasmaFire], { type: 'audio/wav' });
+        const readyBlob = new Blob([weaponReady], { type: 'audio/wav' });
+        const rocketBlob = new Blob([rocketFire], { type: 'audio/wav' });
+
+        // Create object URLs for the Blobs
+        const plasmaUrl = URL.createObjectURL(plasmaBlob);
+        const readyUrl = URL.createObjectURL(readyBlob);
+        const rocketUrl = URL.createObjectURL(rocketBlob);
+
+        // Load the sounds
+        this.load.audio('plasma_fire', plasmaUrl);
+        this.load.audio('weapon_ready', readyUrl);
+        this.load.audio('rocket_fire', rocketUrl);
+
+        // Clean up URLs after loading
+        this.load.once('complete', () => {
+            URL.revokeObjectURL(plasmaUrl);
+            URL.revokeObjectURL(readyUrl);
+            URL.revokeObjectURL(rocketUrl);
+        });
     }
 
     create(): void {
@@ -47,6 +68,9 @@ export class FlightScene extends Scene {
 
         // Create ship with guaranteed loaded texture
         this.setupShip();
+
+        // Setup weapons after ship
+        this.weaponSystem = new WeaponSystem(this);
 
         // Setup camera and controls after ship
         this.setupCameraAndControls();
@@ -396,6 +420,9 @@ export class FlightScene extends Scene {
         if (this.layerManager?.isTransitioning() && this.layerTransitionParticles && this.ship) {
             this.layerTransitionParticles.setPosition(this.ship.x, this.ship.y);
         }
+
+        // Update weapon system
+        this.weaponSystem.update(this.game.loop.delta);
     }
 
     shutdown(): void {
