@@ -2,25 +2,19 @@ import { Scene } from 'phaser';
 import { IWeapon, IWeaponConfig } from './WeaponInterfaces';
 
 export class PlasmaBlaster implements IWeapon {
-    damage: number;
-    cooldown: number;
-    currentCooldown: number;
-    isReady: boolean;
-    private projectileSpeed: number;
-    private projectileLifespan: number;
+    private config: IWeaponConfig;
+    private lastFired: number = 0;
+    private scene?: Scene;
     private projectileGroup?: Phaser.Physics.Arcade.Group;
     private trailEmitter?: Phaser.GameObjects.Particles.ParticleEmitter;
 
     constructor(config: IWeaponConfig) {
-        this.damage = config.damage;
-        this.cooldown = config.cooldown;
-        this.currentCooldown = 0;
-        this.isReady = true;
-        this.projectileSpeed = config.projectileSpeed;
-        this.projectileLifespan = config.projectileLifespan;
+        this.config = config;
     }
 
-    initialize(scene: Scene) {
+    initialize(scene: Scene): void {
+        this.scene = scene;
+
         // Create projectile group
         this.projectileGroup = scene.physics.add.group({
             classType: Phaser.Physics.Arcade.Sprite,
@@ -62,19 +56,25 @@ export class PlasmaBlaster implements IWeapon {
         }
     }
 
-    fire(scene: Scene, x: number, y: number, angle: number): void {
-        if (!this.isReady || !this.projectileGroup) return;
+    fire(ship: Phaser.Physics.Arcade.Sprite): void {
+        if (!this.scene || !this.projectileGroup) return;
+
+        const now = Date.now();
+        if (now - this.lastFired < this.config.cooldown) return;
 
         // Create projectile
-        const projectile = this.projectileGroup.get(x, y, 'plasma_projectile') as Phaser.Physics.Arcade.Sprite;
+        const projectile = this.projectileGroup.get(ship.x, ship.y, 'plasma_projectile') as Phaser.Physics.Arcade.Sprite;
         
         if (projectile) {
             projectile.setActive(true);
             projectile.setVisible(true);
-            projectile.setAngle(angle);
+            projectile.setAngle(ship.angle);
             
             // Calculate velocity based on angle
-            const velocity = scene.physics.velocityFromAngle(angle - 90, this.projectileSpeed);
+            const velocity = this.scene.physics.velocityFromRotation(
+                ship.rotation - Math.PI/2,
+                this.config.projectileSpeed
+            );
             projectile.setVelocity(velocity.x, velocity.y);
 
             // Set up trail
@@ -83,7 +83,7 @@ export class PlasmaBlaster implements IWeapon {
             }
 
             // Set lifespan
-            scene.time.delayedCall(this.projectileLifespan, () => {
+            this.scene.time.delayedCall(this.config.projectileLifespan, () => {
                 if (this.trailEmitter) {
                     this.trailEmitter.stopFollow();
                 }
@@ -93,25 +93,21 @@ export class PlasmaBlaster implements IWeapon {
             });
 
             // Play fire sound
-            scene.sound.play('plasma_fire', { volume: 0.5 });
+            if (this.config.sounds.fire) {
+                this.scene.sound.play(this.config.sounds.fire, { volume: 0.5 });
+            }
 
-            // Start cooldown
-            this.isReady = false;
-            this.currentCooldown = this.cooldown;
+            this.lastFired = now;
         }
     }
 
     update(delta: number): void {
-        if (!this.isReady && this.currentCooldown > 0) {
-            this.currentCooldown -= delta;
-            if (this.currentCooldown <= 0) {
-                this.isReady = true;
-                this.currentCooldown = 0;
-            }
-        }
+        // Update any active projectiles or effects
     }
 
     getCooldownProgress(): number {
-        return this.isReady ? 1 : 1 - (this.currentCooldown / this.cooldown);
+        const now = Date.now();
+        const timeSinceLastFire = now - this.lastFired;
+        return Math.min(1, timeSinceLastFire / this.config.cooldown);
     }
 } 

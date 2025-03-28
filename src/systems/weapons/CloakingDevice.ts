@@ -5,27 +5,19 @@ export class CloakingDevice implements IWeapon {
     private config: IWeaponConfig;
     private lastFired: number = 0;
     private isActive: boolean = false;
+    private scene!: Scene;
     private activeEffect?: Phaser.GameObjects.Particles.ParticleEmitter;
     private activeShip?: Phaser.Physics.Arcade.Sprite;
     private originalShipAlpha: number = 1;
     private cloakDuration: number = 5000; // 5 seconds of cloaking
 
-    // IWeapon interface properties
-    damage: number;
-    cooldown: number;
-    currentCooldown: number = 0;
-
     constructor(config: IWeaponConfig) {
         this.config = config;
-        this.damage = config.damage;
-        this.cooldown = config.cooldown;
-    }
-
-    get isReady(): boolean {
-        return this.currentCooldown <= 0;
     }
 
     initialize(scene: Scene): void {
+        this.scene = scene;
+
         // Create cloak effect particle texture
         const graphics = scene.add.graphics();
         graphics.lineStyle(1, 0x00ffff);
@@ -39,22 +31,22 @@ export class CloakingDevice implements IWeapon {
         graphics.destroy();
     }
 
-    fire(scene: Scene, x: number, y: number, angle: number): void {
-        if (!this.isReady || this.isActive) return;
+    fire(ship: Phaser.Physics.Arcade.Sprite): void {
+        const now = Date.now();
+        if (now - this.lastFired < this.config.cooldown || this.isActive) return;
 
         // Play activation sound
-        scene.sound.play(this.config.sounds.fire);
+        if (this.config.sounds.fire) {
+            this.scene.sound.play(this.config.sounds.fire);
+        }
 
-        // Get reference to the ship
-        this.activeShip = scene.ship;
-        if (!this.activeShip) return;
-
-        // Store original alpha
-        this.originalShipAlpha = this.activeShip.alpha;
+        // Store ship reference and original alpha
+        this.activeShip = ship;
+        this.originalShipAlpha = ship.alpha;
 
         // Create cloaking effect
-        this.activeEffect = scene.add.particles(0, 0, 'cloak_particle', {
-            follow: this.activeShip,
+        this.activeEffect = this.scene.add.particles(0, 0, 'cloak_particle', {
+            follow: ship,
             scale: { start: 0.5, end: 0 },
             alpha: { start: 0.2, end: 0 },
             speed: { min: 20, max: 50 },
@@ -65,8 +57,8 @@ export class CloakingDevice implements IWeapon {
         });
 
         // Apply cloaking effect
-        scene.tweens.add({
-            targets: this.activeShip,
+        this.scene.tweens.add({
+            targets: ship,
             alpha: 0.2,
             duration: 500,
             ease: 'Power2'
@@ -74,27 +66,27 @@ export class CloakingDevice implements IWeapon {
 
         // Set active state
         this.isActive = true;
-        this.currentCooldown = this.cooldown;
+        this.lastFired = now;
 
         // Set up deactivation timer
-        scene.time.delayedCall(this.cloakDuration, () => {
-            this.deactivate(scene);
+        this.scene.time.delayedCall(this.cloakDuration, () => {
+            this.deactivate();
         });
 
         // Play ready sound when cooldown completes
-        scene.time.delayedCall(this.cooldown, () => {
-            if (this.isReady) {
-                scene.sound.play(this.config.sounds.ready);
+        this.scene.time.delayedCall(this.config.cooldown, () => {
+            if (this.getCooldownProgress() === 1 && this.config.sounds.ready) {
+                this.scene.sound.play(this.config.sounds.ready);
             }
         });
     }
 
-    deactivate(scene: Scene): void {
+    private deactivate(): void {
         if (!this.isActive) return;
 
         // Restore ship visibility
         if (this.activeShip) {
-            scene.tweens.add({
+            this.scene.tweens.add({
                 targets: this.activeShip,
                 alpha: this.originalShipAlpha,
                 duration: 500,
@@ -114,13 +106,12 @@ export class CloakingDevice implements IWeapon {
     }
 
     update(delta: number): void {
-        // Update cooldown
-        if (this.currentCooldown > 0) {
-            this.currentCooldown = Math.max(0, this.currentCooldown - delta);
-        }
+        // No continuous updates needed - using time-based cooldown
     }
 
     getCooldownProgress(): number {
-        return 1 - (this.currentCooldown / this.cooldown);
+        const now = Date.now();
+        const timeSinceLastFire = now - this.lastFired;
+        return Math.min(1, timeSinceLastFire / this.config.cooldown);
     }
 } 

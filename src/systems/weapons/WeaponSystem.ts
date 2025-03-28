@@ -3,6 +3,7 @@ import { IWeapon, IWeaponConfig } from './WeaponInterfaces';
 import { PlasmaBlaster } from './PlasmaBlaster';
 import { RocketLauncher } from './RocketLauncher';
 import { CloakingDevice } from './CloakingDevice';
+import { WeaponUI } from './WeaponUI';
 
 export class WeaponSystem {
     private scene: Scene;
@@ -14,31 +15,29 @@ export class WeaponSystem {
     constructor(scene: Scene) {
         this.scene = scene;
         
-        // Initialize primary weapon (Plasma Blaster)
+        // Initialize weapons with configurations
         const plasmaConfig: IWeaponConfig = {
             damage: 10,
             cooldown: 300, // 0.3 seconds
             projectileSpeed: 600,
-            projectileLifespan: 1000, // 1 second
+            projectileLifespan: 1000,
             sounds: {
                 fire: 'plasma_fire',
                 ready: 'weapon_ready'
             }
         };
-        
-        // Initialize secondary weapon (Rocket Launcher)
+
         const rocketConfig: IWeaponConfig = {
             damage: 50,
             cooldown: 1000, // 1 second
             projectileSpeed: 400,
-            projectileLifespan: 2000, // 2 seconds
+            projectileLifespan: 2000,
             sounds: {
                 fire: 'rocket_fire',
                 ready: 'weapon_ready'
             }
         };
 
-        // Initialize special weapon (Cloaking Device)
         const cloakConfig: IWeaponConfig = {
             damage: 0,
             cooldown: 15000, // 15 seconds
@@ -49,11 +48,13 @@ export class WeaponSystem {
                 ready: 'weapon_ready'
             }
         };
-        
+
+        // Create weapons with configs
         this.primaryWeapon = new PlasmaBlaster(plasmaConfig);
         this.secondaryWeapon = new RocketLauncher(rocketConfig);
         this.specialWeapon = new CloakingDevice(cloakConfig);
-        
+
+        // Initialize weapons with scene
         this.primaryWeapon.initialize(scene);
         this.secondaryWeapon.initialize(scene);
         this.specialWeapon.initialize(scene);
@@ -61,25 +62,33 @@ export class WeaponSystem {
         // Create weapon UI
         this.weaponUI = new WeaponUI(scene);
 
-        // Set up input handlers
+        // Setup input handlers
         this.setupInputHandlers();
+
+        // Debug log
+        console.log('WeaponSystem initialized with all weapons and UI');
     }
 
     private setupInputHandlers(): void {
-        // Primary weapon (left mouse button)
+        // Primary weapon (Left Mouse Button)
         this.scene.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
             if (pointer.leftButtonDown()) {
+                console.log('Left mouse button pressed - firing primary weapon');
                 this.fireWeapon('primary');
             }
         });
 
-        // Secondary weapon (left shift)
-        this.scene.input.keyboard?.addKey('SHIFT').on('down', () => {
+        // Secondary weapon (Left Shift)
+        const shiftKey = this.scene.input.keyboard!.addKey('SHIFT');
+        shiftKey.on('down', () => {
+            console.log('Shift pressed - firing secondary weapon');
             this.fireWeapon('secondary');
         });
 
-        // Special weapon (spacebar)
-        this.scene.input.keyboard?.addKey('SPACE').on('down', () => {
+        // Special weapon (Space)
+        const spaceKey = this.scene.input.keyboard!.addKey('SPACE');
+        spaceKey.on('down', () => {
+            console.log('Space pressed - activating special weapon');
             this.fireWeapon('special');
         });
     }
@@ -137,7 +146,6 @@ export class WeaponSystem {
         };
     }
 
-    // Static helper to convert AudioBuffer to WAV format
     private static audioBufferToWav(buffer: AudioBuffer): ArrayBuffer {
         const numChannels = 1;
         const sampleRate = buffer.sampleRate;
@@ -190,110 +198,24 @@ export class WeaponSystem {
     fireWeapon(type: 'primary' | 'secondary' | 'special'): void {
         if (!this.scene.ship) return;
 
-        const ship = this.scene.ship;
-        switch (type) {
-            case 'primary':
-                this.primaryWeapon.fire(
-                    this.scene,
-                    ship.x,
-                    ship.y,
-                    ship.angle
-                );
-                break;
-            case 'secondary':
-                this.secondaryWeapon.fire(
-                    this.scene,
-                    ship.x,
-                    ship.y,
-                    ship.angle
-                );
-                break;
-            case 'special':
-                this.specialWeapon.fire(
-                    this.scene,
-                    ship.x,
-                    ship.y,
-                    ship.angle
-                );
-                break;
-        }
+        const weapon = type === 'primary' ? this.primaryWeapon :
+                      type === 'secondary' ? this.secondaryWeapon :
+                      this.specialWeapon;
+
+        weapon.fire(this.scene.ship);
     }
 
     update(delta: number): void {
-        // Update weapons
+        // Update all weapons
         this.primaryWeapon.update(delta);
         this.secondaryWeapon.update(delta);
         this.specialWeapon.update(delta);
 
-        // Update UI
+        // Update UI with cooldown progress
         this.weaponUI.updateCooldowns({
             primary: this.primaryWeapon.getCooldownProgress(),
             secondary: this.secondaryWeapon.getCooldownProgress(),
             special: this.specialWeapon.getCooldownProgress()
         });
-    }
-}
-
-class WeaponUI {
-    private scene: Scene;
-    private primaryCooldownBar: Phaser.GameObjects.Graphics;
-    private secondaryCooldownBar: Phaser.GameObjects.Graphics;
-    private specialCooldownBar: Phaser.GameObjects.Graphics;
-
-    constructor(scene: Scene) {
-        this.scene = scene;
-        this.primaryCooldownBar = scene.add.graphics();
-        this.secondaryCooldownBar = scene.add.graphics();
-        this.specialCooldownBar = scene.add.graphics();
-        
-        this.primaryCooldownBar.setScrollFactor(0);
-        this.secondaryCooldownBar.setScrollFactor(0);
-        this.specialCooldownBar.setScrollFactor(0);
-        
-        this.primaryCooldownBar.setDepth(1000);
-        this.secondaryCooldownBar.setDepth(1000);
-        this.specialCooldownBar.setDepth(1000);
-    }
-
-    updateCooldowns(progress: { primary: number, secondary: number, special: number }): void {
-        // Clear all bars
-        this.primaryCooldownBar.clear();
-        this.secondaryCooldownBar.clear();
-        this.specialCooldownBar.clear();
-
-        // Draw primary weapon cooldown bar
-        this.primaryCooldownBar.fillStyle(0x444444);
-        this.primaryCooldownBar.fillRect(10, this.scene.cameras.main.height - 30, 100, 10);
-        
-        this.primaryCooldownBar.fillStyle(0x4444ff);
-        this.primaryCooldownBar.fillRect(10, this.scene.cameras.main.height - 30, 100 * progress.primary, 10);
-
-        // Draw secondary weapon cooldown bar
-        this.secondaryCooldownBar.fillStyle(0x444444);
-        this.secondaryCooldownBar.fillRect(10, this.scene.cameras.main.height - 50, 100, 10);
-        
-        this.secondaryCooldownBar.fillStyle(0xff4444);
-        this.secondaryCooldownBar.fillRect(10, this.scene.cameras.main.height - 50, 100 * progress.secondary, 10);
-
-        // Draw special weapon cooldown bar
-        this.specialCooldownBar.fillStyle(0x444444);
-        this.specialCooldownBar.fillRect(10, this.scene.cameras.main.height - 70, 100, 10);
-        
-        this.specialCooldownBar.fillStyle(0x44ffff);
-        this.specialCooldownBar.fillRect(10, this.scene.cameras.main.height - 70, 100 * progress.special, 10);
-
-        // Show ready effects
-        if (progress.primary === 1) {
-            this.primaryCooldownBar.lineStyle(2, 0xffffff);
-            this.primaryCooldownBar.strokeRect(10, this.scene.cameras.main.height - 30, 100, 10);
-        }
-        if (progress.secondary === 1) {
-            this.secondaryCooldownBar.lineStyle(2, 0xffffff);
-            this.secondaryCooldownBar.strokeRect(10, this.scene.cameras.main.height - 50, 100, 10);
-        }
-        if (progress.special === 1) {
-            this.specialCooldownBar.lineStyle(2, 0xffffff);
-            this.specialCooldownBar.strokeRect(10, this.scene.cameras.main.height - 70, 100, 10);
-        }
     }
 } 

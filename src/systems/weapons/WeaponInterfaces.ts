@@ -1,12 +1,10 @@
 import { Scene } from 'phaser';
 
 export interface IWeapon {
-    damage: number;
-    cooldown: number;
-    currentCooldown: number;
-    isReady: boolean;
-    fire(scene: Scene, x: number, y: number, angle: number): void;
+    fire(ship: Phaser.Physics.Arcade.Sprite): void;
     update(delta: number): void;
+    initialize(scene: Scene): void;
+    getCooldownProgress(): number;
 }
 
 export interface IProjectile {
@@ -24,8 +22,7 @@ export interface IEffect {
 }
 
 export interface IWeaponUI {
-    updateCooldown(weapon: IWeapon): void;
-    showReadyEffect(): void;
+    updateCooldowns(progress: { primary: number, secondary: number, special: number }): void;
 }
 
 export interface IWeaponSound {
