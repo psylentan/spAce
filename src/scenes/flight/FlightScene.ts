@@ -37,28 +37,32 @@ export class FlightScene extends Scene {
         this.load.image('ship', 'assets/sprites/starship200.png');
 
         // Generate and preload weapon sounds
-        const { plasmaFire, weaponReady, rocketFire } = WeaponSystem.generateWeaponSounds();
+        const { plasmaFire, weaponReady, rocketFire, cloakActivate } = WeaponSystem.generateWeaponSounds();
         
         // Create Blobs from the ArrayBuffers
         const plasmaBlob = new Blob([plasmaFire], { type: 'audio/wav' });
         const readyBlob = new Blob([weaponReady], { type: 'audio/wav' });
         const rocketBlob = new Blob([rocketFire], { type: 'audio/wav' });
+        const cloakBlob = new Blob([cloakActivate], { type: 'audio/wav' });
 
         // Create object URLs for the Blobs
         const plasmaUrl = URL.createObjectURL(plasmaBlob);
         const readyUrl = URL.createObjectURL(readyBlob);
         const rocketUrl = URL.createObjectURL(rocketBlob);
+        const cloakUrl = URL.createObjectURL(cloakBlob);
 
         // Load the sounds
         this.load.audio('plasma_fire', plasmaUrl);
         this.load.audio('weapon_ready', readyUrl);
         this.load.audio('rocket_fire', rocketUrl);
+        this.load.audio('cloak_activate', cloakUrl);
 
         // Clean up URLs after loading
         this.load.once('complete', () => {
             URL.revokeObjectURL(plasmaUrl);
             URL.revokeObjectURL(readyUrl);
             URL.revokeObjectURL(rocketUrl);
+            URL.revokeObjectURL(cloakUrl);
         });
     }
 
