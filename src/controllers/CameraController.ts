@@ -23,6 +23,9 @@ export class CameraController {
     private camera: Cameras.Scene2D.Camera;
     private target: GameObjects.Sprite;
     private config: CameraConfig;
+    private minZoom: number = 0.5;
+    private maxZoom: number = 2.0;
+    private zoomSpeed: number = 0.001;
 
     constructor(scene: Scene, target: GameObjects.Sprite) {
         this.scene = scene;
@@ -34,7 +37,7 @@ export class CameraController {
             minZoom: 0.5,
             maxZoom: 2.0,
             defaultZoom: 1.0,
-            zoomSpeed: 0.1,
+            zoomSpeed: 0.001,
             lerpX: 0.09,
             lerpY: 0.09,
             offsetX: 0,
@@ -76,14 +79,14 @@ export class CameraController {
     private setupZoom(): void {
         // Add mouse wheel zoom functionality
         this.scene.input.on('wheel', (pointer: any, gameObjects: any, deltaX: number, deltaY: number) => {
-            const zoomDelta = deltaY * this.config.zoomSpeed * 0.001;
+            const zoomDelta = deltaY * this.zoomSpeed * 0.001;
             const newZoom = this.camera.zoom - zoomDelta;
             
             // Clamp zoom level
             this.camera.setZoom(
                 Math.max(
-                    this.config.minZoom,
-                    Math.min(this.config.maxZoom, newZoom)
+                    this.minZoom,
+                    Math.min(this.maxZoom, newZoom)
                 )
             );
         });
@@ -113,10 +116,20 @@ export class CameraController {
 
     public setZoom(zoom: number): void {
         const clampedZoom = Math.max(
-            this.config.minZoom,
-            Math.min(this.config.maxZoom, zoom)
+            this.minZoom,
+            Math.min(this.maxZoom, zoom)
         );
         this.camera.setZoom(clampedZoom);
+    }
+
+    public handleMouseWheel(deltaY: number): void {
+        const newZoom = this.camera.zoom - (deltaY * this.zoomSpeed);
+        this.camera.setZoom(
+            Math.max(
+                this.minZoom,
+                Math.min(this.maxZoom, newZoom)
+            )
+        );
     }
 
     // Cleanup

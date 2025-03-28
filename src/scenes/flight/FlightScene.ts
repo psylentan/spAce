@@ -5,6 +5,7 @@ import { StarField } from '../../systems/StarField';
 import { MeteoriteBelt } from '../../systems/MeteoriteBelt';
 import { LayerManager, LayerConfig } from '../../systems/LayerManager';
 import { WeaponSystem } from '../../systems/weapons/WeaponSystem';
+import { PlanetManager } from '../../systems/space-objects/PlanetManager';
 
 declare module 'phaser' {
     interface Scene {
@@ -26,6 +27,7 @@ export class FlightScene extends Scene {
     private layerTransitionParticles: Phaser.GameObjects.Particles.ParticleEmitter | null = null;
     private denseStarField!: StarField;
     private weaponSystem!: WeaponSystem;
+    private planetManager!: PlanetManager;
 
     constructor() {
         super({ key: 'FlightScene' });
@@ -64,6 +66,9 @@ export class FlightScene extends Scene {
             URL.revokeObjectURL(rocketUrl);
             URL.revokeObjectURL(cloakUrl);
         });
+
+        // Load planet texture
+        this.load.image('planet_earth', 'assets/sprites/Zerion.png');
     }
 
     create(): void {
@@ -73,14 +78,23 @@ export class FlightScene extends Scene {
         // Create ship with guaranteed loaded texture
         this.setupShip();
 
-        // Setup weapons after ship
-        this.weaponSystem = new WeaponSystem(this);
-
         // Setup camera and controls after ship
         this.setupCameraAndControls();
 
+        // Setup weapons after ship and controls
+        this.weaponSystem = new WeaponSystem(this);
+
         // Setup UI elements last
         this.setupUIElements();
+
+        // Initialize planet manager after ship creation
+        this.planetManager = new PlanetManager(this, this.ship);
+
+        // Create a test planet
+        this.planetManager.createTestPlanet(1000, 1000);
+
+        // Debug log
+        console.log('Scene setup complete. Controls and weapons initialized.');
     }
 
     private setupShip(): void {
@@ -200,9 +214,15 @@ export class FlightScene extends Scene {
         // Setup controls
         this.cursors = this.input.keyboard!.createCursorKeys();
 
-        // Add control toggle
-        this.input.keyboard!.addKey('SPACE').on('down', () => {
+        // Add control toggle (use Z instead of SPACE to avoid conflict with weapon system)
+        this.input.keyboard!.addKey('Z').on('down', () => {
             this.mouseControl = !this.mouseControl;
+            console.log('Control mode:', this.mouseControl ? 'Mouse' : 'Keyboard');
+        });
+
+        // Add mouse wheel zoom
+        this.input.on('wheel', (pointer: any, gameObjects: any, deltaX: number, deltaY: number) => {
+            this.cameraController.handleMouseWheel(deltaY);
         });
     }
 
@@ -427,6 +447,9 @@ export class FlightScene extends Scene {
 
         // Update weapon system
         this.weaponSystem.update(this.game.loop.delta);
+
+        // Update planet system
+        this.planetManager.update();
     }
 
     shutdown(): void {
