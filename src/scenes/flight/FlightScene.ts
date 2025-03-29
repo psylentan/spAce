@@ -7,15 +7,16 @@ import { LayerManager, LayerConfig } from '../../systems/LayerManager';
 import { WeaponSystem } from '../../systems/weapons/WeaponSystem';
 import { PlanetManager } from '../../systems/space-objects/PlanetManager';
 import { AsteroidSystem } from '../../systems/space-objects/AsteroidSystem';
+import { Ship } from '../../objects/Ship';
 
 declare module 'phaser' {
     interface Scene {
-        ship: Phaser.Physics.Arcade.Sprite;
+        ship: Ship;
     }
 }
 
 export class FlightScene extends Scene {
-    public ship!: Phaser.Physics.Arcade.Sprite;
+    public ship!: Ship;
     private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
     private mouseControl: boolean = true;
     private config: ShipConfig;
@@ -74,6 +75,9 @@ export class FlightScene extends Scene {
     }
 
     create(): void {
+        // Set world bounds first
+        this.physics.world.setBounds(-2500, -2500, 5000, 5000);
+        
         // Create background layers first
         this.setupBackgroundLayers();
 
@@ -105,33 +109,33 @@ export class FlightScene extends Scene {
         // Initialize asteroid system with debug logging
         this.asteroidSystem = new AsteroidSystem(this, {
             spawnArea: {
-                x: -2000,
-                y: -2000,
-                width: 4000,
-                height: 4000
+                x: -2000,          // Increased from -300
+                y: -2000,          // Increased from -300
+                width: 4000,       // Increased from 600
+                height: 4000       // Increased from 600
             },
-            maxAsteroids: 30,
-            minSpawnDistance: 150,
+            maxAsteroids: 15,      // Increased from 3
+            minSpawnDistance: 400, // Reduced from 600 to allow more spread
             asteroidTypes: [
                 {
                     key: 'asteroid',
                     resourceType: 'iron',
                     health: 100,
-                    scale: 0.5,
+                    scale: 0.3,    // Slightly increased from 0.2
                     probability: 0.7
                 },
                 {
                     key: 'asteroid',
                     resourceType: 'gold',
                     health: 150,
-                    scale: 0.6,
+                    scale: 0.4,    // Slightly increased from 0.3
                     probability: 0.2
                 },
                 {
                     key: 'asteroid',
                     resourceType: 'platinum',
                     health: 200,
-                    scale: 0.7,
+                    scale: 0.5,    // Slightly increased from 0.4
                     probability: 0.1
                 }
             ]
@@ -163,10 +167,10 @@ export class FlightScene extends Scene {
 
     private setupShip(): void {
         // Create ship in the center with adjusted properties for the new detailed design
-        this.ship = this.physics.add.sprite(
+        this.ship = new Ship(
+            this,
             this.cameras.main.centerX,
-            this.cameras.main.centerY,
-            'ship'
+            this.cameras.main.centerY
         );
 
         // Force immediate scale update

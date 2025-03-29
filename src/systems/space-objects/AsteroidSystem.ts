@@ -1,5 +1,7 @@
 import { Scene } from 'phaser';
 import { Asteroid, AsteroidConfig } from './Asteroid';
+import { LootSystem } from '../loot/LootSystem';
+import { Ship } from '../../objects/Ship';
 
 export interface AsteroidSystemConfig {
     spawnArea: {
@@ -23,34 +25,28 @@ export interface AsteroidSystemConfig {
 export class AsteroidSystem {
     private scene: Scene;
     private config: AsteroidSystemConfig;
-    private asteroids: Asteroid[] = [];
-    private ship: Phaser.Physics.Arcade.Sprite;
+    private asteroids: Phaser.GameObjects.Group;
+    private lootSystem: LootSystem;
+    private ship: Ship;
     private smallAsteroids: Phaser.Physics.Arcade.Group;
     private mediumAsteroids: Phaser.Physics.Arcade.Group;
     private largeAsteroids: Phaser.Physics.Arcade.Group;
+    private weaponGroup: Phaser.Physics.Arcade.Group;
 
-    constructor(scene: Scene, config: AsteroidSystemConfig, ship: Phaser.Physics.Arcade.Sprite) {
+    constructor(scene: Scene, config: AsteroidSystemConfig, ship: Ship) {
         this.scene = scene;
-        this.config = {
-            ...config,
-            maxAsteroids: config.maxAsteroids || 20,
-            minSpawnDistance: config.minSpawnDistance || 200,
-            asteroidTypes: config.asteroidTypes || [
-                {
-                    key: 'asteroid',
-                    resourceType: 'iron',
-                    health: 100,
-                    scale: 1,
-                    probability: 1
-                }
-            ]
-        };
+        this.config = config;
         this.ship = ship;
-
-        // Initialize physics groups
-        this.smallAsteroids = this.scene.physics.add.group({ classType: Asteroid });
-        this.mediumAsteroids = this.scene.physics.add.group({ classType: Asteroid });
-        this.largeAsteroids = this.scene.physics.add.group({ classType: Asteroid });
+        
+        // Initialize groups
+        this.asteroids = this.scene.add.group();
+        this.smallAsteroids = this.scene.physics.add.group();
+        this.mediumAsteroids = this.scene.physics.add.group();
+        this.largeAsteroids = this.scene.physics.add.group();
+        this.weaponGroup = this.scene.physics.add.group();
+        
+        // Initialize loot system
+        this.lootSystem = new LootSystem(scene, ship);
 
         // Initialize asteroid field
         this.initializeAsteroids();
@@ -68,46 +64,69 @@ export class AsteroidSystem {
     }
 
     private spawnAsteroid(): void {
-        if (this.asteroids.length >= this.config.maxAsteroids!) return;
-
-        // Get random position within spawn area
-        const position = this.getRandomSpawnPosition();
-        
-        // Check if position is too close to ship or other asteroids
-        if (!this.isValidSpawnPosition(position)) {
+        // Safety check for required configuration
+        if (!this.config.maxAsteroids || !this.config.minSpawnDistance || !this.config.asteroidTypes) {
+            console.warn('Missing required asteroid configuration');
             return;
         }
 
-        // Select random asteroid type based on probability
-        const asteroidType = this.selectRandomAsteroidType();
+        const asteroids = this.asteroids.getChildren() as Asteroid[];
+        if (asteroids.length >= this.config.maxAsteroids) return;
+
+        // Get random position within spawn area
+        const position = this.getRandomSpawnPosition();
+        if (!this.isValidSpawnPosition(position)) {
+            console.log('Failed to find valid spawn position');
+            return;
+        }
+
+        // Get random asteroid type with safety check
+        const asteroidType = this.getRandomAsteroidType();
+        if (!asteroidType) {
+            console.warn('Failed to get valid asteroid type');
+            return;
+        }
 
         // Create asteroid config
         const config: AsteroidConfig = {
             position,
-            sprite: {
-                key: asteroidType.key,
-                frame: asteroidType.frame
-            },
             health: asteroidType.health,
             scale: asteroidType.scale,
-            resourceType: asteroidType.resourceType
+            resourceType: asteroidType.resourceType,
+            lootSystem: this.lootSystem
         };
 
-        // Create new asteroid
-        const asteroid = new Asteroid(this.scene, config);
-        this.asteroids.push(asteroid);
-        
-        // Add asteroid to appropriate physics group
-        this.addAsteroidToGroup(asteroid);
-        
-        console.log('Spawned asteroid:', {
-            position: position,
-            scale: asteroidType.scale,
-            resourceType: asteroidType.resourceType
-        });
+        try {
+            // Create new asteroid
+            const asteroid = new Asteroid(this.scene, config);
+            
+            // Add to appropriate physics group based on size
+            const scale = config.scale || 1;
+            if (scale < 0.5) {
+                this.smallAsteroids.add(asteroid);
+            } else if (scale < 0.8) {
+                this.mediumAsteroids.add(asteroid);
+            } else {
+                this.largeAsteroids.add(asteroid);
+            }
 
-        // Listen for asteroid destruction
-        asteroid.on('destroyed', this.onAsteroidDestroyed, this);
+            // Add to general asteroids group for tracking
+            this.asteroids.add(asteroid);
+
+            // Add very slow random velocity to make asteroids drift gently
+            const angle = Phaser.Math.FloatBetween(0, Math.PI * 2);
+            const speed = Phaser.Math.FloatBetween(0.05, 0.15);
+            asteroid.setVelocity(
+                Math.cos(angle) * speed,
+                Math.sin(angle) * speed
+            );
+            
+            // Add very slow rotation
+            const rotationSpeed = Phaser.Math.FloatBetween(-0.2, 0.2);
+            asteroid.setAngularVelocity(rotationSpeed);
+        } catch (error) {
+            console.error('Failed to create asteroid:', error);
+        }
     }
 
     private getRandomSpawnPosition(): { x: number; y: number } {
@@ -125,27 +144,24 @@ export class AsteroidSystem {
             this.ship.x,
             this.ship.y
         );
-        if (distanceToShip < this.config.minSpawnDistance!) {
-            return false;
-        }
+        if (distanceToShip < this.config.minSpawnDistance!) return false;
 
         // Check distance from other asteroids
-        for (const asteroid of this.asteroids) {
+        const asteroids = this.asteroids.getChildren() as Asteroid[];
+        for (const asteroid of asteroids) {
             const distanceToAsteroid = Phaser.Math.Distance.Between(
                 position.x,
                 position.y,
                 asteroid.x,
                 asteroid.y
             );
-            if (distanceToAsteroid < this.config.minSpawnDistance!) {
-                return false;
-            }
+            if (distanceToAsteroid < this.config.minSpawnDistance!) return false;
         }
 
         return true;
     }
 
-    private selectRandomAsteroidType() {
+    private getRandomAsteroidType() {
         const totalProbability = this.config.asteroidTypes!.reduce(
             (sum, type) => sum + type.probability,
             0
@@ -163,13 +179,20 @@ export class AsteroidSystem {
     }
 
     private onAsteroidDestroyed(data: { position: { x: number; y: number }; resourceType: string; resourceAmount: number }): void {
-        // Remove destroyed asteroid from array
-        this.asteroids = this.asteroids.filter(asteroid => !asteroid.destroyed);
-
-        // Spawn a new asteroid after some delay
-        this.scene.time.delayedCall(2000, () => {
-            this.spawnAsteroid();
+        // Remove destroyed asteroids
+        const asteroids = this.asteroids.getChildren() as Asteroid[];
+        this.asteroids.clear();
+        asteroids.filter(asteroid => !asteroid.destroyed).forEach(asteroid => {
+            this.asteroids.add(asteroid);
         });
+
+        // Only spawn a new asteroid if we're below the maximum
+        if (this.asteroids.getChildren().length < this.config.maxAsteroids!) {
+            // Spawn a new asteroid after some delay
+            this.scene.time.delayedCall(10000, () => {
+                this.spawnAsteroid();
+            });
+        }
 
         // Emit event for resource collection
         this.scene.events.emit('resourceDropped', data);
@@ -177,16 +200,18 @@ export class AsteroidSystem {
 
     public update(): void {
         // Clean up destroyed asteroids
-        this.asteroids = this.asteroids.filter(asteroid => !asteroid.destroyed);
+        const asteroids = this.asteroids.getChildren() as Asteroid[];
+        this.asteroids.clear();
+        asteroids.filter(asteroid => !asteroid.destroyed).forEach(asteroid => {
+            this.asteroids.add(asteroid);
+        });
 
-        // Spawn new asteroids if below maximum
-        while (this.asteroids.length < this.config.maxAsteroids!) {
-            this.spawnAsteroid();
-        }
+        // Only spawn new asteroids when one is destroyed, not continuously
+        // This is now handled in onAsteroidDestroyed()
     }
 
     public getAsteroids(): Asteroid[] {
-        return this.asteroids;
+        return this.asteroids.getChildren() as Asteroid[];
     }
 
     private setupAsteroidCollisions(): void {
@@ -198,37 +223,68 @@ export class AsteroidSystem {
         this.scene.physics.add.collider(this.mediumAsteroids, this.largeAsteroids);
         this.scene.physics.add.collider(this.largeAsteroids, this.largeAsteroids);
         
-        // Add collision with ship
-        this.scene.physics.add.collider(this.ship, this.smallAsteroids, this.handleShipCollision, undefined, this);
-        this.scene.physics.add.collider(this.ship, this.mediumAsteroids, this.handleShipCollision, undefined, this);
-        this.scene.physics.add.collider(this.ship, this.largeAsteroids, this.handleShipCollision, undefined, this);
+        // Add collision with ship for each asteroid group
+        [this.smallAsteroids, this.mediumAsteroids, this.largeAsteroids].forEach(group => {
+            this.scene.physics.add.overlap(
+                this.ship,
+                group,
+                this.handleShipCollision,
+                undefined,
+                this
+            );
+        });
     }
 
-    private handleShipCollision = (object1: any, object2: any): void => {
-        const ship = object1 as Phaser.Physics.Arcade.Sprite;
-        const asteroid = object2 as Asteroid;
+    private handleShipCollision(object1: any, object2: any): void {
+        // Ensure we have the right objects, regardless of order
+        let ship: Ship;
+        let asteroid: Asteroid;
+        
+        if (object1 instanceof Ship && object2 instanceof Asteroid) {
+            ship = object1;
+            asteroid = object2;
+        } else if (object2 instanceof Ship && object1 instanceof Asteroid) {
+            ship = object2;
+            asteroid = object1;
+        } else {
+            console.warn('Invalid collision objects:', { object1, object2 });
+            return;
+        }
 
-        if (!ship.body || !asteroid.body) return;
+        if (!ship.body || !asteroid.body) {
+            console.warn('Ship or asteroid missing physics body in collision');
+            return;
+        }
 
-        // Calculate collision damage based on relative velocity
-        const relativeVelocity = Phaser.Math.Distance.Between(
-            ship.body.velocity.x,
-            ship.body.velocity.y,
-            (asteroid.body as Phaser.Physics.Arcade.Body).velocity.x,
-            (asteroid.body as Phaser.Physics.Arcade.Body).velocity.y
-        );
+        // Calculate relative velocity for damage
+        const relativeVelocity = new Phaser.Math.Vector2()
+            .copy(ship.body.velocity)
+            .subtract(asteroid.body.velocity);
+        
+        const impactSpeed = relativeVelocity.length();
+        const damage = Math.floor(impactSpeed * 0.1); // 10% of impact speed as damage
 
-        // Emit collision event for the ship to handle
-        this.scene.events.emit('shipAsteroidCollision', {
-            ship: ship,
-            asteroid: asteroid,
-            velocity: relativeVelocity
+        console.log('Ship collision detected:', {
+            impactSpeed,
+            calculatedDamage: damage,
+            shipVelocity: ship.body.velocity,
+            asteroidVelocity: asteroid.body.velocity,
+            shipInitialHealth: {
+                hull: ship.getHullHealth(),
+                shield: ship.getShieldHealth()
+            }
         });
 
-        console.log('Ship-asteroid collision:', {
-            relativeVelocity,
-            shipVelocity: ship.body.velocity,
-            asteroidVelocity: (asteroid.body as Phaser.Physics.Arcade.Body).velocity
+        // Apply damage to ship
+        ship.damage(damage);
+
+        // Log post-damage state
+        console.log('Ship damage applied:', {
+            damage,
+            shipFinalHealth: {
+                hull: ship.getHullHealth(),
+                shield: ship.getShieldHealth()
+            }
         });
     }
 
@@ -246,10 +302,7 @@ export class AsteroidSystem {
             this.scene.physics.add.overlap(
                 weaponGroup,
                 asteroidGroup,
-                (weapon, asteroid) => {
-                    console.log('Weapon-asteroid overlap detected:', { weapon, asteroid });
-                    this.handleWeaponCollision(weapon, asteroid);
-                },
+                this.handleWeaponCollision,
                 undefined,
                 this
             );
@@ -274,35 +327,5 @@ export class AsteroidSystem {
             console.log('Destroying weapon');
             weapon.destroy();
         }
-    }
-
-    private addAsteroidToGroup(asteroid: Asteroid): void {
-        // Add asteroid to appropriate group based on size
-        const scale = asteroid.scale;
-        if (scale <= 0.5) {
-            this.smallAsteroids.add(asteroid);
-        } else if (scale <= 0.8) {
-            this.mediumAsteroids.add(asteroid);
-        } else {
-            this.largeAsteroids.add(asteroid);
-        }
-        
-        // Configure physics body
-        const body = asteroid.body as Phaser.Physics.Arcade.Body;
-        body.setCircle(asteroid.width / 2);
-        body.setBounce(0.5);
-        body.setDrag(50);
-        body.setAngularDrag(50);
-        body.setMaxVelocity(200);
-        
-        // Set velocity inversely proportional to size
-        const baseSpeed = 50;
-        const speedMultiplier = 1 / asteroid.scale;
-        const angle = Phaser.Math.FloatBetween(0, Math.PI * 2);
-        const speed = baseSpeed * speedMultiplier;
-        body.setVelocity(
-            Math.cos(angle) * speed,
-            Math.sin(angle) * speed
-        );
     }
 } 

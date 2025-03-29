@@ -1,4 +1,5 @@
 import { Scene } from 'phaser';
+import { LootSystem } from '../loot/LootSystem';
 
 export interface AsteroidConfig {
     position: { x: number; y: number };
@@ -10,6 +11,7 @@ export interface AsteroidConfig {
         key: string;
         frame?: string | number;
     };
+    lootSystem?: LootSystem;
 }
 
 export class Asteroid extends Phaser.Physics.Arcade.Sprite {
@@ -19,6 +21,7 @@ export class Asteroid extends Phaser.Physics.Arcade.Sprite {
     private resourceAmount: number;
     private isDestroyed: boolean = false;
     public destroyed: boolean = false;  // Public property for external checks
+    private lootSystem?: LootSystem;
 
     constructor(scene: Scene, config: AsteroidConfig) {
         super(
@@ -28,6 +31,9 @@ export class Asteroid extends Phaser.Physics.Arcade.Sprite {
             config.sprite?.key || 'asteroid',
             config.sprite?.frame
         );
+
+        // Store loot system if provided
+        this.lootSystem = config.lootSystem;
 
         // Add to scene and enable physics
         scene.add.existing(this);
@@ -153,6 +159,12 @@ export class Asteroid extends Phaser.Physics.Arcade.Sprite {
         const scene = this.scene;
         const position = { x: this.x, y: this.y };
         
+        // Spawn loot if loot system is available
+        if (this.lootSystem && this.body) {
+            const velocity = new Phaser.Math.Vector2(this.body.velocity.x, this.body.velocity.y);
+            this.lootSystem.spawnLoot(position.x, position.y, this.scale, velocity);
+        }
+
         // Create multiple spinning particles
         const numParticles = Phaser.Math.Between(6, 12);
         const particles = [];
@@ -198,7 +210,7 @@ export class Asteroid extends Phaser.Physics.Arcade.Sprite {
 
         // Emit event for resource drop
         this.emit('destroyed', {
-            position: position,
+            position,
             resourceType: this.resourceType,
             resourceAmount: this.resourceAmount
         });
