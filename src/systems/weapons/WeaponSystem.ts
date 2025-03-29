@@ -219,22 +219,11 @@ export class WeaponSystem {
         });
     }
 
-    public getProjectileGroup(): Phaser.Physics.Arcade.Group {
-        // Create a combined group for all weapon projectiles
-        const combinedGroup = this.scene.physics.add.group();
-        
-        // Add projectiles from plasma blaster
-        const plasmaGroup = this.primaryWeapon.getProjectileGroup();
-        if (plasmaGroup) {
-            combinedGroup.addMultiple(plasmaGroup.getChildren());
-        }
+    public getPrimaryWeaponGroup(): Phaser.Physics.Arcade.Group | undefined {
+        return this.primaryWeapon.getProjectileGroup();
+    }
 
-        // Add projectiles from rocket launcher if it has a projectile group
-        const rocketGroup = this.secondaryWeapon.getProjectileGroup();
-        if (rocketGroup) {
-            combinedGroup.addMultiple(rocketGroup.getChildren());
-        }
-        
-        return combinedGroup;
+    public getSecondaryWeaponGroup(): Phaser.Physics.Arcade.Group | undefined {
+        return this.secondaryWeapon.getProjectileGroup();
     }
 } 

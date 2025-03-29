@@ -40,11 +40,6 @@ export class FlightScene extends Scene {
         // Load ship sprite
         this.load.image('ship', 'assets/sprites/starship200.png');
 
-        // Load asteroid assets
-        this.load.image('asteroid', 'assets/sprites/asteroids/asteroid.png');
-        this.load.image('asteroid_field', 'assets/sprites/asteroids/asteroid_field.png');
-        this.load.image('asteroid_particle', 'assets/sprites/asteroids/asteroid_particle.png');
-
         // Generate and preload weapon sounds
         const { plasmaFire, weaponReady, rocketFire, cloakActivate } = WeaponSystem.generateWeaponSounds();
         
@@ -100,9 +95,12 @@ export class FlightScene extends Scene {
         // Create a test planet
         this.planetManager.createTestPlanet(1000, 1000);
 
-        // Enable physics debug
+        // Enable physics debug with lower depth
         this.physics.world.createDebugGraphic();
-        this.physics.world.debugGraphic.setDepth(999);
+        this.physics.world.debugGraphic.setDepth(10);  // Set lower depth so it doesn't cover sprites
+
+        // Verify texture loading
+        console.log('Available textures:', this.textures.list);
 
         // Initialize asteroid system with debug logging
         this.asteroidSystem = new AsteroidSystem(this, {
@@ -119,31 +117,42 @@ export class FlightScene extends Scene {
                     key: 'asteroid',
                     resourceType: 'iron',
                     health: 100,
-                    scale: 0.5,  // Reduced scale to match game scale
+                    scale: 0.5,
                     probability: 0.7
                 },
                 {
                     key: 'asteroid',
                     resourceType: 'gold',
                     health: 150,
-                    scale: 0.6,  // Reduced scale to match game scale
+                    scale: 0.6,
                     probability: 0.2
                 },
                 {
                     key: 'asteroid',
                     resourceType: 'platinum',
                     health: 200,
-                    scale: 0.7,  // Reduced scale to match game scale
+                    scale: 0.7,
                     probability: 0.1
                 }
             ]
         }, this.ship);
 
         // Set up collision between weapons and asteroids with debug logging
-        const projectileGroup = this.weaponSystem.getProjectileGroup();
         console.log('Setting up collision between weapons and asteroids');
-        console.log('Projectile group:', projectileGroup);
-        this.asteroidSystem.setupCollisionWithWeapons(projectileGroup);
+        
+        // Get individual weapon groups
+        const primaryGroup = this.weaponSystem.getPrimaryWeaponGroup();
+        const secondaryGroup = this.weaponSystem.getSecondaryWeaponGroup();
+        
+        if (primaryGroup) {
+            console.log('Setting up primary weapon collisions');
+            this.asteroidSystem.setupCollisionWithWeapons(primaryGroup);
+        }
+        
+        if (secondaryGroup) {
+            console.log('Setting up secondary weapon collisions');
+            this.asteroidSystem.setupCollisionWithWeapons(secondaryGroup);
+        }
 
         // Listen for resource drops
         this.events.on('resourceDropped', this.handleResourceDrop, this);

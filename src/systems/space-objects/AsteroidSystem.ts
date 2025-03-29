@@ -25,6 +25,9 @@ export class AsteroidSystem {
     private config: AsteroidSystemConfig;
     private asteroids: Asteroid[] = [];
     private ship: Phaser.Physics.Arcade.Sprite;
+    private smallAsteroids: Phaser.Physics.Arcade.Group;
+    private mediumAsteroids: Phaser.Physics.Arcade.Group;
+    private largeAsteroids: Phaser.Physics.Arcade.Group;
 
     constructor(scene: Scene, config: AsteroidSystemConfig, ship: Phaser.Physics.Arcade.Sprite) {
         this.scene = scene;
@@ -43,6 +46,11 @@ export class AsteroidSystem {
             ]
         };
         this.ship = ship;
+
+        // Initialize physics groups
+        this.smallAsteroids = this.scene.physics.add.group({ classType: Asteroid });
+        this.mediumAsteroids = this.scene.physics.add.group({ classType: Asteroid });
+        this.largeAsteroids = this.scene.physics.add.group({ classType: Asteroid });
 
         // Initialize asteroid field
         this.initializeAsteroids();
@@ -88,6 +96,10 @@ export class AsteroidSystem {
         // Create new asteroid
         const asteroid = new Asteroid(this.scene, config);
         this.asteroids.push(asteroid);
+        
+        // Add asteroid to appropriate physics group
+        this.addAsteroidToGroup(asteroid);
+        
         console.log('Spawned asteroid:', {
             position: position,
             scale: asteroidType.scale,
@@ -178,88 +190,119 @@ export class AsteroidSystem {
     }
 
     private setupAsteroidCollisions(): void {
-        // Create a physics group for asteroids
-        const asteroidGroup = this.scene.physics.add.group(this.asteroids);
+        // Enable collisions between different asteroid groups
+        this.scene.physics.add.collider(this.smallAsteroids, this.smallAsteroids);
+        this.scene.physics.add.collider(this.smallAsteroids, this.mediumAsteroids);
+        this.scene.physics.add.collider(this.smallAsteroids, this.largeAsteroids);
+        this.scene.physics.add.collider(this.mediumAsteroids, this.mediumAsteroids);
+        this.scene.physics.add.collider(this.mediumAsteroids, this.largeAsteroids);
+        this.scene.physics.add.collider(this.largeAsteroids, this.largeAsteroids);
         
-        // Enable collision between asteroids in the group
-        this.scene.physics.add.collider(asteroidGroup, asteroidGroup);
-        
-        // Add collision with ship (optional, depending on your game design)
-        this.scene.physics.add.collider(this.ship, asteroidGroup, (ship, asteroid) => {
-            // Handle ship-asteroid collision here
-            console.log('Ship collided with asteroid');
+        // Add collision with ship
+        this.scene.physics.add.collider(this.ship, this.smallAsteroids, this.handleShipCollision, undefined, this);
+        this.scene.physics.add.collider(this.ship, this.mediumAsteroids, this.handleShipCollision, undefined, this);
+        this.scene.physics.add.collider(this.ship, this.largeAsteroids, this.handleShipCollision, undefined, this);
+    }
+
+    private handleShipCollision = (object1: any, object2: any): void => {
+        const ship = object1 as Phaser.Physics.Arcade.Sprite;
+        const asteroid = object2 as Asteroid;
+
+        if (!ship.body || !asteroid.body) return;
+
+        // Calculate collision damage based on relative velocity
+        const relativeVelocity = Phaser.Math.Distance.Between(
+            ship.body.velocity.x,
+            ship.body.velocity.y,
+            (asteroid.body as Phaser.Physics.Arcade.Body).velocity.x,
+            (asteroid.body as Phaser.Physics.Arcade.Body).velocity.y
+        );
+
+        // Emit collision event for the ship to handle
+        this.scene.events.emit('shipAsteroidCollision', {
+            ship: ship,
+            asteroid: asteroid,
+            velocity: relativeVelocity
+        });
+
+        console.log('Ship-asteroid collision:', {
+            relativeVelocity,
+            shipVelocity: ship.body.velocity,
+            asteroidVelocity: (asteroid.body as Phaser.Physics.Arcade.Body).velocity
         });
     }
 
     public setupCollisionWithWeapons(weaponGroup: Phaser.Physics.Arcade.Group): void {
-        console.log('Setting up collision detection. Active asteroids:', this.asteroids.length);
-        
-        // Debug log weapon group
-        console.log('Weapon group details:', {
-            name: weaponGroup.name,
-            active: weaponGroup.active,
-            childrenCount: weaponGroup.getChildren().length,
-            isRunChildUpdate: weaponGroup.runChildUpdate
-        });
-
-        // Create a physics group for asteroids if not already created
-        const asteroidGroup = this.scene.physics.add.group(this.asteroids);
-
-        // Ensure all asteroids have proper physics bodies
-        this.asteroids.forEach((asteroid, index) => {
-            if (!asteroid.body || !(asteroid.body as Phaser.Physics.Arcade.Body).enable) {
-                console.warn(`Asteroid ${index} has invalid physics body, reinitializing...`);
-                this.scene.physics.add.existing(asteroid);
-                const body = asteroid.body as Phaser.Physics.Arcade.Body;
-                body.setCircle(asteroid.width / 2);
-                body.enable = true;
-            }
-
-            console.log(`Asteroid ${index} details:`, {
-                active: asteroid.active,
-                visible: asteroid.visible,
-                body: asteroid.body ? {
-                    enable: (asteroid.body as Phaser.Physics.Arcade.Body).enable,
-                    width: (asteroid.body as Phaser.Physics.Arcade.Body).width,
-                    height: (asteroid.body as Phaser.Physics.Arcade.Body).height
-                } : 'no body'
-            });
+        console.log('Setting up collision detection with weapon groups', {
+            weaponGroup: weaponGroup,
+            smallAsteroids: this.smallAsteroids,
+            mediumAsteroids: this.mediumAsteroids,
+            largeAsteroids: this.largeAsteroids
         });
         
-        // Use collider for weapon-asteroid collision
-        this.scene.physics.add.overlap(
-            weaponGroup,
-            asteroidGroup,
-            (weaponObj, asteroidObj) => {
-                const weapon = weaponObj as Phaser.GameObjects.Sprite;
-                const asteroidSprite = asteroidObj as Phaser.Physics.Arcade.Sprite;
-                
-                // Find the actual Asteroid instance from our array
-                const asteroid = this.asteroids.find(a => a === asteroidSprite);
-                
-                if (!asteroid) {
-                    console.warn('Could not find matching asteroid instance');
-                    return;
-                }
-                
-                console.log('Collision detected between weapon and asteroid:', {
-                    weaponPosition: { x: weapon.x, y: weapon.y },
-                    asteroidPosition: { x: asteroid.x, y: asteroid.y }
-                });
-                
-                // Handle weapon-specific damage
-                const damage = weapon.getData('damage') as number || 10;
-                asteroid.damage(damage);
-                
-                // Use dissolve effect if available, otherwise destroy
-                if (typeof (weapon as any).dissolve === 'function') {
-                    (weapon as any).dissolve();
-                } else {
-                    weapon.destroy();
-                }
-            },
-            undefined,
-            this
+        // Set up collision with each asteroid group
+        [this.smallAsteroids, this.mediumAsteroids, this.largeAsteroids].forEach(asteroidGroup => {
+            console.log('Setting up overlap for asteroid group:', asteroidGroup);
+            this.scene.physics.add.overlap(
+                weaponGroup,
+                asteroidGroup,
+                (weapon, asteroid) => {
+                    console.log('Weapon-asteroid overlap detected:', { weapon, asteroid });
+                    this.handleWeaponCollision(weapon, asteroid);
+                },
+                undefined,
+                this
+            );
+        });
+    }
+
+    private handleWeaponCollision = (object1: any, object2: any): void => {
+        console.log('handleWeaponCollision called with:', { object1, object2 });
+        const weapon = object1 as Phaser.GameObjects.GameObject;
+        const asteroid = object2 as Asteroid;
+        
+        // Handle weapon-specific damage
+        const damage = weapon.getData('damage') as number || 10;
+        console.log('Applying weapon damage:', { damage, asteroid });
+        asteroid.damage(damage);
+        
+        // Use dissolve effect if available, otherwise destroy
+        if (typeof (weapon as any).dissolve === 'function') {
+            console.log('Dissolving weapon');
+            (weapon as any).dissolve();
+        } else {
+            console.log('Destroying weapon');
+            weapon.destroy();
+        }
+    }
+
+    private addAsteroidToGroup(asteroid: Asteroid): void {
+        // Add asteroid to appropriate group based on size
+        const scale = asteroid.scale;
+        if (scale <= 0.5) {
+            this.smallAsteroids.add(asteroid);
+        } else if (scale <= 0.8) {
+            this.mediumAsteroids.add(asteroid);
+        } else {
+            this.largeAsteroids.add(asteroid);
+        }
+        
+        // Configure physics body
+        const body = asteroid.body as Phaser.Physics.Arcade.Body;
+        body.setCircle(asteroid.width / 2);
+        body.setBounce(0.5);
+        body.setDrag(50);
+        body.setAngularDrag(50);
+        body.setMaxVelocity(200);
+        
+        // Set velocity inversely proportional to size
+        const baseSpeed = 50;
+        const speedMultiplier = 1 / asteroid.scale;
+        const angle = Phaser.Math.FloatBetween(0, Math.PI * 2);
+        const speed = baseSpeed * speedMultiplier;
+        body.setVelocity(
+            Math.cos(angle) * speed,
+            Math.sin(angle) * speed
         );
     }
 } 

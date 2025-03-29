@@ -23,7 +23,18 @@ export class PlasmaBlaster implements IWeapon {
         this.projectileGroup = scene.physics.add.group({
             classType: Phaser.Physics.Arcade.Sprite,
             maxSize: 30,
-            runChildUpdate: true
+            runChildUpdate: true,
+            defaultKey: 'plasma_projectile',
+            createCallback: (gameObject) => {
+                const projectile = gameObject as Phaser.Physics.Arcade.Sprite;
+                const body = projectile.body as Phaser.Physics.Arcade.Body;
+                if (body) {
+                    body.enable = true;
+                    body.setSize(projectile.width * 0.8, projectile.height * 0.8);
+                    body.setOffset(projectile.width * 0.1, projectile.height * 0.1);
+                    body.setBounce(0);
+                }
+            }
         });
 
         // Create particle emitter for trails
@@ -78,15 +89,6 @@ export class PlasmaBlaster implements IWeapon {
             projectile.setData('damage', this.config.damage);
             projectile.setData('isDissolving', false);
             
-            // Enable physics body for collision
-            const body = projectile.body as Phaser.Physics.Arcade.Body;
-            if (body) {
-                body.enable = true;
-                body.setSize(projectile.width * 0.8, projectile.height * 0.8);  // Slightly smaller hitbox
-                body.setOffset(projectile.width * 0.1, projectile.height * 0.1);
-                body.setBounce(0);  // No bounce
-            }
-            
             // Calculate velocity based on angle
             const velocity = this.scene.physics.velocityFromRotation(
                 ship.rotation - Math.PI/2,
@@ -104,8 +106,10 @@ export class PlasmaBlaster implements IWeapon {
                 if (projectile.getData('isDissolving')) return;
                 projectile.setData('isDissolving', true);
                 
-                // Stop the projectile
-                projectile.setVelocity(0, 0);
+                // Only try to stop the projectile if it's still active
+                if (projectile.active && projectile.body) {
+                    projectile.setVelocity(0, 0);
+                }
                 
                 // Create dissolve effect
                 if (this.scene) {
@@ -118,17 +122,24 @@ export class PlasmaBlaster implements IWeapon {
                         blendMode: 'ADD'
                     });
                     
-                    // Fade out the projectile
-                    this.scene.tweens.add({
-                        targets: projectile,
-                        alpha: 0,
-                        scale: 0.5,
-                        duration: 100,
-                        onComplete: () => {
+                    // Fade out the projectile if it's still active
+                    if (projectile.active) {
+                        this.scene.tweens.add({
+                            targets: projectile,
+                            alpha: 0,
+                            scale: 0.5,
+                            duration: 100,
+                            onComplete: () => {
+                                particles.destroy();
+                                projectile.destroy();
+                            }
+                        });
+                    } else {
+                        // If projectile is already destroyed, just clean up particles
+                        this.scene.time.delayedCall(200, () => {
                             particles.destroy();
-                            projectile.destroy();
-                        }
-                    });
+                        });
+                    }
                 }
             };
 

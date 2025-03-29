@@ -1,5 +1,7 @@
 import 'phaser';
 import { FlightScene } from './scenes/flight/FlightScene';
+import { PreloadScene } from './scenes/core/PreloadScene';
+import { StartScene } from './scenes/core/StartScene';
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -24,7 +26,7 @@ const config: Phaser.Types.Core.GameConfig = {
     }
   },
   backgroundColor: '#000000',
-  scene: FlightScene,
+  scene: [PreloadScene, StartScene, FlightScene],
   pixelArt: true,
   roundPixels: true // For crisp rendering
 };
