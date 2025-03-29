@@ -6,6 +6,7 @@ import { MeteoriteBelt } from '../../systems/MeteoriteBelt';
 import { LayerManager, LayerConfig } from '../../systems/LayerManager';
 import { WeaponSystem } from '../../systems/weapons/WeaponSystem';
 import { PlanetManager } from '../../systems/space-objects/PlanetManager';
+import { AsteroidSystem } from '../../systems/space-objects/AsteroidSystem';
 
 declare module 'phaser' {
     interface Scene {
@@ -28,6 +29,7 @@ export class FlightScene extends Scene {
     private denseStarField!: StarField;
     private weaponSystem!: WeaponSystem;
     private planetManager!: PlanetManager;
+    private asteroidSystem!: AsteroidSystem;
 
     constructor() {
         super({ key: 'FlightScene' });
@@ -37,6 +39,11 @@ export class FlightScene extends Scene {
     preload(): void {
         // Load ship sprite
         this.load.image('ship', 'assets/sprites/starship200.png');
+
+        // Load asteroid assets
+        this.load.image('asteroid', 'assets/sprites/asteroids/asteroid.png');
+        this.load.image('asteroid_field', 'assets/sprites/asteroids/asteroid_field.png');
+        this.load.image('asteroid_particle', 'assets/sprites/asteroids/asteroid_particle.png');
 
         // Generate and preload weapon sounds
         const { plasmaFire, weaponReady, rocketFire, cloakActivate } = WeaponSystem.generateWeaponSounds();
@@ -92,6 +99,54 @@ export class FlightScene extends Scene {
 
         // Create a test planet
         this.planetManager.createTestPlanet(1000, 1000);
+
+        // Enable physics debug
+        this.physics.world.createDebugGraphic();
+        this.physics.world.debugGraphic.setDepth(999);
+
+        // Initialize asteroid system with debug logging
+        this.asteroidSystem = new AsteroidSystem(this, {
+            spawnArea: {
+                x: -2000,
+                y: -2000,
+                width: 4000,
+                height: 4000
+            },
+            maxAsteroids: 30,
+            minSpawnDistance: 150,
+            asteroidTypes: [
+                {
+                    key: 'asteroid',
+                    resourceType: 'iron',
+                    health: 100,
+                    scale: 0.5,  // Reduced scale to match game scale
+                    probability: 0.7
+                },
+                {
+                    key: 'asteroid',
+                    resourceType: 'gold',
+                    health: 150,
+                    scale: 0.6,  // Reduced scale to match game scale
+                    probability: 0.2
+                },
+                {
+                    key: 'asteroid',
+                    resourceType: 'platinum',
+                    health: 200,
+                    scale: 0.7,  // Reduced scale to match game scale
+                    probability: 0.1
+                }
+            ]
+        }, this.ship);
+
+        // Set up collision between weapons and asteroids with debug logging
+        const projectileGroup = this.weaponSystem.getProjectileGroup();
+        console.log('Setting up collision between weapons and asteroids');
+        console.log('Projectile group:', projectileGroup);
+        this.asteroidSystem.setupCollisionWithWeapons(projectileGroup);
+
+        // Listen for resource drops
+        this.events.on('resourceDropped', this.handleResourceDrop, this);
 
         // Debug log
         console.log('Scene setup complete. Controls and weapons initialized.');
@@ -356,6 +411,35 @@ export class FlightScene extends Scene {
         this.config.acceleration = physics.acceleration;
     }
 
+    private handleResourceDrop(data: { position: { x: number; y: number }; resourceType: string; resourceAmount: number }): void {
+        // Create a floating resource sprite
+        const resource = this.add.sprite(data.position.x, data.position.y, 'asteroid_particle')
+            .setTint(this.getResourceColor(data.resourceType))
+            .setScale(2);
+
+        // Add floating animation
+        this.tweens.add({
+            targets: resource,
+            y: resource.y - 20,
+            alpha: 0,
+            duration: 2000,
+            ease: 'Power2',
+            onComplete: () => resource.destroy()
+        });
+
+        // TODO: Add to player's inventory when collection system is implemented
+        console.log(`Collected ${data.resourceAmount} ${data.resourceType}`);
+    }
+
+    private getResourceColor(resourceType: string): number {
+        switch (resourceType) {
+            case 'iron': return 0xcccccc;
+            case 'gold': return 0xffd700;
+            case 'platinum': return 0xe5e4e2;
+            default: return 0xffffff;
+        }
+    }
+
     update(): void {
         if (!this.ship || !this.ship.body) return;
 
@@ -450,6 +534,9 @@ export class FlightScene extends Scene {
 
         // Update planet system
         this.planetManager.update();
+
+        // Update asteroid system
+        this.asteroidSystem.update();
     }
 
     shutdown(): void {

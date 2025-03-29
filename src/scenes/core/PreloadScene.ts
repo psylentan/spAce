@@ -56,6 +56,12 @@ export class PreloadScene extends Scene {
         // Load all game assets here
         // this.load.image('player', 'assets/sprites/player.png');
         // this.load.image('enemy', 'assets/sprites/enemy.png');
+        
+        // Load asteroid assets
+        this.load.image('asteroid', 'assets/space-objects/asteroids/asteroid.png');
+        this.load.image('asteroid_field', 'assets/space-objects/asteroids/asteroid_field.png');
+        this.load.image('asteroid_particle', 'assets/space-objects/asteroids/asteroid_particle.png');
+        
         // ... more assets will be added as needed
     }
 } 

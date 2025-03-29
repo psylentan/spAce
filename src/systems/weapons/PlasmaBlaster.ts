@@ -1,6 +1,10 @@
 import { Scene } from 'phaser';
 import { IWeapon, IWeaponConfig } from './WeaponInterfaces';
 
+interface ProjectileSprite extends Phaser.Physics.Arcade.Sprite {
+    dissolve: () => void;
+}
+
 export class PlasmaBlaster implements IWeapon {
     private config: IWeaponConfig;
     private lastFired: number = 0;
@@ -63,12 +67,25 @@ export class PlasmaBlaster implements IWeapon {
         if (now - this.lastFired < this.config.cooldown) return;
 
         // Create projectile
-        const projectile = this.projectileGroup.get(ship.x, ship.y, 'plasma_projectile') as Phaser.Physics.Arcade.Sprite;
+        const projectile = this.projectileGroup.get(ship.x, ship.y, 'plasma_projectile') as ProjectileSprite;
         
         if (projectile) {
             projectile.setActive(true);
             projectile.setVisible(true);
             projectile.setAngle(ship.angle);
+            
+            // Set data for damage
+            projectile.setData('damage', this.config.damage);
+            projectile.setData('isDissolving', false);
+            
+            // Enable physics body for collision
+            const body = projectile.body as Phaser.Physics.Arcade.Body;
+            if (body) {
+                body.enable = true;
+                body.setSize(projectile.width * 0.8, projectile.height * 0.8);  // Slightly smaller hitbox
+                body.setOffset(projectile.width * 0.1, projectile.height * 0.1);
+                body.setBounce(0);  // No bounce
+            }
             
             // Calculate velocity based on angle
             const velocity = this.scene.physics.velocityFromRotation(
@@ -82,14 +99,47 @@ export class PlasmaBlaster implements IWeapon {
                 this.trailEmitter.startFollow(projectile);
             }
 
+            // Add dissolve method
+            projectile.dissolve = () => {
+                if (projectile.getData('isDissolving')) return;
+                projectile.setData('isDissolving', true);
+                
+                // Stop the projectile
+                projectile.setVelocity(0, 0);
+                
+                // Create dissolve effect
+                if (this.scene) {
+                    const particles = this.scene.add.particles(projectile.x, projectile.y, 'plasma_particle', {
+                        speed: { min: 20, max: 50 },
+                        scale: { start: 0.4, end: 0 },
+                        alpha: { start: 0.6, end: 0 },
+                        lifespan: 200,
+                        quantity: 10,
+                        blendMode: 'ADD'
+                    });
+                    
+                    // Fade out the projectile
+                    this.scene.tweens.add({
+                        targets: projectile,
+                        alpha: 0,
+                        scale: 0.5,
+                        duration: 100,
+                        onComplete: () => {
+                            particles.destroy();
+                            projectile.destroy();
+                        }
+                    });
+                }
+            };
+
             // Set lifespan
             this.scene.time.delayedCall(this.config.projectileLifespan, () => {
                 if (this.trailEmitter) {
                     this.trailEmitter.stopFollow();
                 }
-                projectile.setActive(false);
-                projectile.setVisible(false);
-                projectile.destroy();
+                if (!projectile.getData('isDissolving')) {
+                    projectile.dissolve();
+                }
             });
 
             // Play fire sound
@@ -109,5 +159,9 @@ export class PlasmaBlaster implements IWeapon {
         const now = Date.now();
         const timeSinceLastFire = now - this.lastFired;
         return Math.min(1, timeSinceLastFire / this.config.cooldown);
+    }
+
+    getProjectileGroup(): Phaser.Physics.Arcade.Group | undefined {
+        return this.projectileGroup;
     }
 } 
