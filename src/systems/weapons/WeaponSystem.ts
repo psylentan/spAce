@@ -218,4 +218,12 @@ export class WeaponSystem {
             special: this.specialWeapon.getCooldownProgress()
         });
     }
+
+    public getPrimaryWeaponGroup(): Phaser.Physics.Arcade.Group | undefined {
+        return this.primaryWeapon.getProjectileGroup();
+    }
+
+    public getSecondaryWeaponGroup(): Phaser.Physics.Arcade.Group | undefined {
+        return this.secondaryWeapon.getProjectileGroup();
+    }
 } 

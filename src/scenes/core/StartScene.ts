@@ -47,8 +47,7 @@ export class StartScene extends Scene {
     }
 
     private startGame(): void {
-        // Will transition to GameScene once implemented
         console.log('Starting game...');
-        // this.scene.start('GameScene');
+        this.scene.start('FlightScene');
     }
 } 

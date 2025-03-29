@@ -6,15 +6,17 @@ import { MeteoriteBelt } from '../../systems/MeteoriteBelt';
 import { LayerManager, LayerConfig } from '../../systems/LayerManager';
 import { WeaponSystem } from '../../systems/weapons/WeaponSystem';
 import { PlanetManager } from '../../systems/space-objects/PlanetManager';
+import { AsteroidSystem } from '../../systems/space-objects/AsteroidSystem';
+import { Ship } from '../../objects/Ship';
 
 declare module 'phaser' {
     interface Scene {
-        ship: Phaser.Physics.Arcade.Sprite;
+        ship: Ship;
     }
 }
 
 export class FlightScene extends Scene {
-    public ship!: Phaser.Physics.Arcade.Sprite;
+    public ship!: Ship;
     private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
     private mouseControl: boolean = true;
     private config: ShipConfig;
@@ -28,6 +30,7 @@ export class FlightScene extends Scene {
     private denseStarField!: StarField;
     private weaponSystem!: WeaponSystem;
     private planetManager!: PlanetManager;
+    private asteroidSystem!: AsteroidSystem;
 
     constructor() {
         super({ key: 'FlightScene' });
@@ -72,6 +75,9 @@ export class FlightScene extends Scene {
     }
 
     create(): void {
+        // Set world bounds first
+        this.physics.world.setBounds(-2500, -2500, 5000, 5000);
+        
         // Create background layers first
         this.setupBackgroundLayers();
 
@@ -93,16 +99,78 @@ export class FlightScene extends Scene {
         // Create a test planet
         this.planetManager.createTestPlanet(1000, 1000);
 
+        // Enable physics debug with lower depth
+        this.physics.world.createDebugGraphic();
+        this.physics.world.debugGraphic.setDepth(10);  // Set lower depth so it doesn't cover sprites
+
+        // Verify texture loading
+        console.log('Available textures:', this.textures.list);
+
+        // Initialize asteroid system with debug logging
+        this.asteroidSystem = new AsteroidSystem(this, {
+            spawnArea: {
+                x: -2000,          // Increased from -300
+                y: -2000,          // Increased from -300
+                width: 4000,       // Increased from 600
+                height: 4000       // Increased from 600
+            },
+            maxAsteroids: 15,      // Increased from 3
+            minSpawnDistance: 400, // Reduced from 600 to allow more spread
+            asteroidTypes: [
+                {
+                    key: 'asteroid',
+                    resourceType: 'iron',
+                    health: 100,
+                    scale: 0.3,    // Slightly increased from 0.2
+                    probability: 0.7
+                },
+                {
+                    key: 'asteroid',
+                    resourceType: 'gold',
+                    health: 150,
+                    scale: 0.4,    // Slightly increased from 0.3
+                    probability: 0.2
+                },
+                {
+                    key: 'asteroid',
+                    resourceType: 'platinum',
+                    health: 200,
+                    scale: 0.5,    // Slightly increased from 0.4
+                    probability: 0.1
+                }
+            ]
+        }, this.ship);
+
+        // Set up collision between weapons and asteroids with debug logging
+        console.log('Setting up collision between weapons and asteroids');
+        
+        // Get individual weapon groups
+        const primaryGroup = this.weaponSystem.getPrimaryWeaponGroup();
+        const secondaryGroup = this.weaponSystem.getSecondaryWeaponGroup();
+        
+        if (primaryGroup) {
+            console.log('Setting up primary weapon collisions');
+            this.asteroidSystem.setupCollisionWithWeapons(primaryGroup);
+        }
+        
+        if (secondaryGroup) {
+            console.log('Setting up secondary weapon collisions');
+            this.asteroidSystem.setupCollisionWithWeapons(secondaryGroup);
+        }
+
+        // Listen for resource drops
+        this.events.on('resourceDropped', this.handleResourceDrop, this);
+
         // Debug log
         console.log('Scene setup complete. Controls and weapons initialized.');
     }
 
     private setupShip(): void {
         // Create ship in the center with adjusted properties for the new detailed design
-        this.ship = this.physics.add.sprite(
+        this.ship = new Ship(
+            this,
             this.cameras.main.centerX,
-            this.cameras.main.centerY,
-            'ship'
+            this.cameras.main.centerY
         );
 
         // Force immediate scale update
@@ -356,6 +424,35 @@ export class FlightScene extends Scene {
         this.config.acceleration = physics.acceleration;
     }
 
+    private handleResourceDrop(data: { position: { x: number; y: number }; resourceType: string; resourceAmount: number }): void {
+        // Create a floating resource sprite
+        const resource = this.add.sprite(data.position.x, data.position.y, 'asteroid_particle')
+            .setTint(this.getResourceColor(data.resourceType))
+            .setScale(2);
+
+        // Add floating animation
+        this.tweens.add({
+            targets: resource,
+            y: resource.y - 20,
+            alpha: 0,
+            duration: 2000,
+            ease: 'Power2',
+            onComplete: () => resource.destroy()
+        });
+
+        // TODO: Add to player's inventory when collection system is implemented
+        console.log(`Collected ${data.resourceAmount} ${data.resourceType}`);
+    }
+
+    private getResourceColor(resourceType: string): number {
+        switch (resourceType) {
+            case 'iron': return 0xcccccc;
+            case 'gold': return 0xffd700;
+            case 'platinum': return 0xe5e4e2;
+            default: return 0xffffff;
+        }
+    }
+
     update(): void {
         if (!this.ship || !this.ship.body) return;
 
@@ -450,6 +547,9 @@ export class FlightScene extends Scene {
 
         // Update planet system
         this.planetManager.update();
+
+        // Update asteroid system
+        this.asteroidSystem.update();
     }
 
     shutdown(): void {

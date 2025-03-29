@@ -25,10 +25,20 @@ A space exploration and combat-focused deck-building game using Phaser 3, featur
 
 #### Current Phase 🔄
 - PHASE 1.4.3 - RESOURCE & ASTEROID SYSTEM
-  - Destructible asteroids
-  - Resource drops
+  ✅ Completed:
+  - Destructible asteroids with proper physics
+  - Balanced spawn system (max 15 asteroids)
+  - Large play area (4000x4000)
+  - Resource drops with three types
   - Basic inventory system
   - Resource collection UI
+  - Smooth movement and rotation
+  - Particle effects for destruction
+
+  🔄 In Progress:
+  - Enhanced resource collection mechanics
+  - Resource trading system
+  - Advanced inventory management
 
 #### Next Phase 🎯
 - PHASE 1.4.4 - SPACE OBJECTS
@@ -48,15 +58,15 @@ A space exploration and combat-focused deck-building game using Phaser 3, featur
 - Weapon System ✅
 - Space Objects 🔄
   - Planet System ✅
-  - Asteroid System 🔄
-  - Resource System 🎯
+  - Asteroid System ✅
+  - Resource System 🔄
 
 ## System Documentation
 
 ### Asteroid System
 
 #### Overview
-The asteroid system consists of two integrated components that provide both visual atmosphere and gameplay mechanics.
+The asteroid system provides both visual atmosphere and gameplay mechanics, now fully implemented with resource gathering.
 
 #### 1. Background Meteorite Belt (Implemented ✅)
 Currently implemented as a non-interactive background system providing visual atmosphere.
@@ -83,97 +93,89 @@ Currently implemented as a non-interactive background system providing visual at
 }
 ```
 
-#### 2. Destructible Asteroid System (Planned 🎯)
+#### 2. Destructible Asteroid System (Implemented ✅)
 
 ##### Core Features
 - Physics-based collisions
 - Health system
-- Break-apart mechanics
-- Resource drops
+- Break-apart mechanics with particle effects
+- Resource drops with three types
+- Smooth movement and rotation
+- Balanced spawn system (max 15)
+- Large play area (4000x4000)
 
 ##### Asteroid Types
 ```typescript
 {
     SMALL: {
-        size: 'small',
-        health: 50,
-        resources: [
-            { resourceId: 'metal', minAmount: 1, maxAmount: 3, chance: 0.8 },
-            { resourceId: 'crystal', minAmount: 1, maxAmount: 2, chance: 0.2 }
-        ]
+        scale: 0.3,
+        health: 100,
+        resourceType: 'iron',
+        probability: 0.7
     },
     MEDIUM: {
-        size: 'medium',
+        scale: 0.4,
         health: 150,
-        resources: [
-            { resourceId: 'metal', minAmount: 2, maxAmount: 5, chance: 0.9 },
-            { resourceId: 'crystal', minAmount: 2, maxAmount: 4, chance: 0.4 },
-            { resourceId: 'fuel', minAmount: 1, maxAmount: 3, chance: 0.3 }
-        ]
+        resourceType: 'gold',
+        probability: 0.2
     },
     LARGE: {
-        size: 'large',
-        health: 400,
-        resources: [
-            { resourceId: 'metal', minAmount: 4, maxAmount: 8, chance: 1.0 },
-            { resourceId: 'crystal', minAmount: 3, maxAmount: 6, chance: 0.6 },
-            { resourceId: 'fuel', minAmount: 2, maxAmount: 5, chance: 0.5 }
-        ]
+        scale: 0.5,
+        health: 200,
+        resourceType: 'platinum',
+        probability: 0.1
     }
 }
 ```
 
-### Resource System (Planned 🎯)
+### Resource System (Implemented 🔄)
 
 #### Basic Resources
 ```typescript
 {
-    METAL: {
-        id: 'metal',
-        name: 'Space Metal',
+    IRON: {
+        id: 'iron',
+        name: 'Iron',
         description: 'Common metal from asteroids',
         rarity: 'common',
-        baseValue: 10,
-        stackLimit: 100
+        probability: 0.7
     },
-    CRYSTAL: {
-        id: 'crystal',
-        name: 'Energy Crystal',
-        description: 'Crystal with stored energy',
+    GOLD: {
+        id: 'gold',
+        name: 'Gold',
+        description: 'Valuable metal resource',
         rarity: 'uncommon',
-        baseValue: 25,
-        stackLimit: 50
+        probability: 0.2
     },
-    FUEL: {
-        id: 'fuel',
-        name: 'Raw Fuel',
-        description: 'Unstable fuel material',
-        rarity: 'common',
-        baseValue: 15,
-        stackLimit: 75
+    PLATINUM: {
+        id: 'platinum',
+        name: 'Platinum',
+        description: 'Rare and precious metal',
+        rarity: 'rare',
+        probability: 0.1
     }
 }
 ```
 
-#### Implementation Phases
+#### Implementation Status
 
-##### Phase 1: Basic Integration
-- Create destructible asteroid class
-- Implement health system
-- Add basic collision detection
-- Simple resource drops
+##### Phase 1: Basic Integration ✅
+- Created destructible asteroid class
+- Implemented health system
+- Added collision detection
+- Implemented resource drops
 
-##### Phase 2: Resource Management
-- Implement inventory system
-- Add resource collection mechanics
-- Create resource UI
-- Add storage limitations
+##### Phase 2: Resource Management 🔄
+- Basic inventory system implemented
+- Resource collection mechanics working
+- Visual feedback for collection
+- Storage system in progress
 
-##### Phase 3: Enhanced Features
-- Break-apart animations
-- Particle effects
-- Sound effects
-- Resource scanner
+##### Phase 3: Enhanced Features 🔄
+- Break-apart animations completed
+- Particle effects implemented
+- Sound effects pending
+- Resource scanner planned
 
 #### Future Expansions
 1. Resource Processing

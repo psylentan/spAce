@@ -5,7 +5,7 @@ export class RocketLauncher implements IWeapon {
     private config: IWeaponConfig;
     private lastFired: number = 0;
     private scene?: Scene;
-    private projectiles: Phaser.GameObjects.Container[] = [];
+    private projectileGroup?: Phaser.Physics.Arcade.Group;
 
     constructor(config: IWeaponConfig) {
         this.config = config;
@@ -13,17 +13,27 @@ export class RocketLauncher implements IWeapon {
 
     initialize(scene: Scene): void {
         this.scene = scene;
+        
+        // Create projectile group
+        this.projectileGroup = scene.physics.add.group({
+            classType: Phaser.GameObjects.Container,
+            maxSize: 10,
+            runChildUpdate: true
+        });
     }
 
     fire(ship: Phaser.Physics.Arcade.Sprite): void {
-        if (!this.scene) return;
+        if (!this.scene || !this.projectileGroup) return;
 
         const now = Date.now();
         if (now - this.lastFired < this.config.cooldown) return;
 
         // Create rocket container
-        const rocket = this.scene.add.container(ship.x, ship.y);
-        this.projectiles.push(rocket);
+        const rocket = this.projectileGroup.get(ship.x, ship.y) as Phaser.GameObjects.Container;
+        if (!rocket) return;
+
+        rocket.setActive(true);
+        rocket.setVisible(true);
 
         // Create rocket body
         const rocketBody = this.scene.add.rectangle(0, 0, 20, 8, 0xff4444);
@@ -48,6 +58,7 @@ export class RocketLauncher implements IWeapon {
         // Add physics body to rocket container
         this.scene.physics.add.existing(rocket);
         const rocketPhysics = (rocket.body as Phaser.Physics.Arcade.Body);
+        rocketPhysics.setSize(20, 8);  // Match the rocket body size
         
         // Set rocket angle and velocity
         rocket.rotation = ship.rotation;
@@ -62,6 +73,9 @@ export class RocketLauncher implements IWeapon {
         const glow = this.scene.add.pointlight(0, 0, 0xff4444, 30, 0.5);
         rocket.add(glow);
 
+        // Set damage data
+        rocket.setData('damage', this.config.damage);
+
         // Play fire sound
         if (this.config.sounds.fire) {
             this.scene.sound.play(this.config.sounds.fire);
@@ -73,10 +87,6 @@ export class RocketLauncher implements IWeapon {
             if (rocket.active) {
                 this.createExplosion(rocket.x, rocket.y);
                 rocket.destroy();
-                const index = this.projectiles.indexOf(rocket);
-                if (index > -1) {
-                    this.projectiles.splice(index, 1);
-                }
             }
         });
 
@@ -126,27 +136,30 @@ export class RocketLauncher implements IWeapon {
     }
 
     update(delta: number): void {
-        // Update projectiles
-        for (const rocket of this.projectiles) {
-            if (rocket.active) {
-                // Add smoke trail
-                if (this.scene && Math.random() < 0.3) {
-                    const smoke = this.scene.add.circle(
-                        rocket.x - Math.cos(rocket.rotation + Math.PI/2) * 10,
-                        rocket.y - Math.sin(rocket.rotation + Math.PI/2) * 10,
-                        2,
-                        0x666666,
-                        0.3
-                    );
-                    this.scene.tweens.add({
-                        targets: smoke,
-                        alpha: 0,
-                        scale: 2,
-                        duration: 400,
-                        onComplete: () => smoke.destroy()
-                    });
+        // Update active rockets
+        if (this.projectileGroup) {
+            this.projectileGroup.getChildren().forEach((gameObject: Phaser.GameObjects.GameObject) => {
+                const rocket = gameObject as Phaser.GameObjects.Container;
+                if (rocket.active) {
+                    // Add smoke trail
+                    if (this.scene && Math.random() < 0.3) {
+                        const smoke = this.scene.add.circle(
+                            rocket.x - Math.cos(rocket.rotation + Math.PI/2) * 10,
+                            rocket.y - Math.sin(rocket.rotation + Math.PI/2) * 10,
+                            2,
+                            0x666666,
+                            0.3
+                        );
+                        this.scene.tweens.add({
+                            targets: smoke,
+                            alpha: 0,
+                            scale: 2,
+                            duration: 400,
+                            onComplete: () => smoke.destroy()
+                        });
+                    }
                 }
-            }
+            });
         }
     }
 
@@ -154,5 +167,9 @@ export class RocketLauncher implements IWeapon {
         const now = Date.now();
         const timeSinceLastFire = now - this.lastFired;
         return Math.min(1, timeSinceLastFire / this.config.cooldown);
+    }
+
+    getProjectileGroup(): Phaser.Physics.Arcade.Group | undefined {
+        return this.projectileGroup;
     }
 } 
