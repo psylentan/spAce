@@ -1,0 +1,139 @@
+# **Phaser-Based Space Exploration & Deck-Building Game**
+
+## **📌 Project Overview**
+We are developing a **space exploration and combat-focused deck-building game** using **Phaser 3**. This project is highly **experimental**, where we explore different "blocks" of mechanics, systems, and integrations to determine the best approach. The goal is to create a **modular**, **scalable**, and **AI-assisted** game development pipeline while keeping everything centralized within **Cursor.ai** and GitHub.
+
+---
+
+## **🔧 Tech Stack & Integration Blocks**
+
+| **Category** | **Technology / Library** | **Purpose** |
+|----|----|----|
+| **Game Engine** | [Phaser 3](mdc:https:/phaser.io) | Core game engine for 2D space exploration, combat, and card interactions |
+| **Code & Version Control** | [Cursor.ai](mdc:https:/cursor.sh), [GitHub](mdc:https:/github.com) | AI-assisted coding, version control, and centralized project management |
+| **UI & UX** | [KAPLAY.js](mdc:https:/kaplayjs.com), [ROT.js](mdc:https:/ondras.github.io/rot.js/manual) | UI frameworks for game menus, HUDs, and modular UI elements |
+| **Deck & Card System** | Custom MCP Deck Module | AI-assisted deck-building and procedural card generation |
+| **Game Mechanics** | [Matter.js](mdc:https:/brm.io/matter-js), [Cannon.js](mdc:https:/schteppe.github.io/cannon.js) | Pre-built physics and movement for space combat and interactions |
+| **Procedural Content** | Custom MCP Procedural Generation | AI-assisted planetary and event generation system |
+| **Asset Generation** | Custom AI MCP Server (Stable Diffusion API) | Auto-generating space-themed sprites, UI elements, and textures |
+| **Audio & Sound** | [Howler.js](mdc:https:/howlerjs.com), [Web Speech API](mdc:https:/developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API) | Music, sound effects, and AI-powered voice narration |
+
+---
+
+## **🔬 Implemented Systems & Features**
+
+### **🚀 Space Combat & Movement System**
+- ✅ Smooth ship controls with both mouse and keyboard support
+- ✅ Physics-based movement with acceleration, braking, and reverse
+- ✅ Dynamic camera system with zoom and follow mechanics
+- ✅ Weapon systems with projectile collision detection
+- ✅ Enemy AI with multiple behavior states (patrol, chase, attack, retreat)
+- ✅ Particle effects for weapon impacts and explosions
+
+### **🌌 Space Environment**
+- ✅ Multi-layered star field backgrounds
+- ✅ Dynamic layer transition system
+- ✅ Asteroid field with destructible asteroids
+- ✅ Resource drops from destroyed asteroids
+- ✅ Planet system with basic interaction
+- ✅ Meteorite belt for visual depth
+
+### **⚔️ Combat System**
+- ✅ Projectile-based weapons
+- ✅ Enemy spawning system
+- ✅ Health and damage system
+- ✅ Collision detection and response
+- ✅ Visual feedback for hits and destruction
+- ✅ Enemy AI with multiple states
+
+### **🎮 Player Experience**
+- ✅ Smooth controls with both mouse/keyboard options
+- ✅ Visual feedback for all actions
+- ✅ Debug information display
+- ✅ Layer transition effects
+- ✅ Performance optimization
+- ✅ Responsive camera system
+
+---
+
+## **⚡ Current Development Status**
+
+### **Core Systems (Completed)**
+- ✅ Ship movement and physics
+- ✅ Weapon systems
+- ✅ Enemy AI and spawning
+- ✅ Collision detection
+- ✅ Visual effects and particles
+- ✅ Resource system foundation
+
+### **In Progress**
+- 🔄 Deck-building system integration
+- 🔄 Resource collection and inventory
+- 🔄 Mission system
+- 🔄 Space station implementation
+- 🔄 Trading mechanics
+
+### **Planned Features**
+- ⏳ Card-based abilities
+- ⏳ Procedural missions
+- ⏳ Economy system
+- ⏳ Ship upgrades
+- ⏳ NPC interactions
+
+---
+
+## **🎯 Next Development Phases**
+
+### **Phase 1: Core Systems ✅**
+- ✅ Basic ship movement and combat
+- ✅ Enemy AI and spawning
+- ✅ Collision systems
+- ✅ Visual effects
+
+### **Phase 2: Environment & Interaction 🔄**
+- ✅ Asteroid system
+- ✅ Resource collection
+- 🔄 Space station implementation
+- 🔄 Trading system
+
+### **Phase 3: Deck Building ⏳**
+- Card system implementation
+- Ability integration
+- Deck management UI
+- Card collection mechanics
+
+### **Phase 4: Content & Polish ⏳**
+- Mission system
+- Story elements
+- UI/UX improvements
+- Performance optimization
+
+---
+
+## **🔍 Recent Achievements**
+1. **Combat System Improvements**
+   - Enhanced projectile collision detection
+   - Improved enemy hitboxes
+   - Added visual feedback for hits
+   - Implemented enemy respawning
+
+2. **Performance Optimizations**
+   - Improved physics calculations
+   - Better memory management
+   - Optimized particle effects
+
+3. **Bug Fixes**
+   - Fixed projectile collision issues
+   - Improved enemy spawning logic
+   - Enhanced visual feedback
+
+---
+
+## **📋 Next Steps**
+1. Implement resource collection system
+2. Add space station mechanics
+3. Begin deck-building system integration
+4. Enhance mission system
+5. Add more enemy types and behaviors
+
+This document will continue to evolve as we implement new features and refine existing systems. 🚀 
